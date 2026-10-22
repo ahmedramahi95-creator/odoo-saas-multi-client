@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: odoo:20.0
+    image: odoo:18.0
     container_name: client_b_odoo
     depends_on:
       db:
