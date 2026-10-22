@@ -8,11 +8,11 @@
         <field name="arch" type="xml">
             <div name="button_box" position="inside">
                 <button name="action_om_audit_logs" type="object" class="oe_stat_button"
-                        icon="fa-history" groups="base.group_system">
+                        icon="history" groups="base.group_system">
                     <field name="om_audit_log_count" widget="statinfo" string="Activity"/>
                 </button>
                 <button name="action_om_sessions" type="object" class="oe_stat_button"
-                        icon="fa-laptop" groups="base.group_system">
+                        icon="devices" groups="base.group_system">
                     <field name="om_session_count" widget="statinfo" string="Sessions"/>
                 </button>
             </div>

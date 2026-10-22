@@ -2,9 +2,7 @@ import logging
 import re
 
 from odoo import api, fields, models, Command, _
-from odoo.exceptions import UserError
-
-from .tools import lock_rows
+from odoo.exceptions import LockError, UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -267,7 +265,9 @@ class AccountBankStatementLine(models.Model):
         """
         self.ensure_one()
         self._om_check_access()
-        if not lock_rows(self):
+        try:
+            self.lock_for_update()
+        except LockError:
             raise UserError(_('This transaction is being reconciled by someone else, please try again in a moment.'))
         if self.is_reconciled:
             raise UserError(_('The transaction %s is already reconciled.', self.display_name))
@@ -278,7 +278,7 @@ class AccountBankStatementLine(models.Model):
         lines = self._om_prepare_proposal_lines(proposal)
         if not lines:
             raise UserError(_('Select journal items to match or add a counterpart first.'))
-        matched_amls = self.env['account.move.line'].union(*[aml for _vals, aml in lines])
+        matched_amls = self.env['account.move.line'].union([aml for _vals, aml in lines])
         self._om_check_matches(matched_amls)
         remaining_trans, remaining_balance = self._om_remaining(lines)
 
@@ -465,27 +465,19 @@ class AccountBankStatementLine(models.Model):
         if self.is_reconciled:
             return False
         company_models = models.filtered(lambda model: model.company_id == self.company_id)
-        # Odoo 18: the partner mapping lines of the matching rules give the partner of the transaction
-        if not self.partner_id:
-            for model in company_models.filtered('partner_mapping_line_ids'):
-                partner = model._om_is_applicable(self) and model._om_get_mapped_partner(self)
-                if partner:
-                    self.partner_id = partner
-                    break
-        # the models validated automatically: a button is only applied by hand, and a counterpart model
-        # creating an invoice or a bill is left to the core
+        for model in company_models.filtered('mapped_partner_id'):
+            if not self.partner_id and model._om_is_applicable(self):
+                self.partner_id = model.mapped_partner_id
+                break
         for model in company_models.filtered(
-                lambda model: model.auto_reconcile and (
-                    model.rule_type == 'invoice_matching'
-                    or (model.rule_type == 'writeoff_suggestion' and model.counterpart_type == 'general'))):
+                lambda model: model.trigger == 'auto_reconcile' and not model.mapped_partner_id):
             if not model._om_is_applicable(self):
                 continue
             proposal = model._om_get_proposal(self)
             if proposal and self._om_is_complete(proposal):
                 self._om_reconcile(proposal)
-                if model.to_check:
-                    # Odoo 18 marks the entries to check, where 19 schedules an activity
-                    self.move_id.checked = False
+                if model.next_activity_type_id:
+                    self.move_id.activity_schedule(activity_type_id=model.next_activity_type_id.id)
                 return True
         if self.company_id.om_reconcile_auto:
             scored = self._om_scored_candidates(limit=2)

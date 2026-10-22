@@ -8,8 +8,7 @@ import {
 } from "@mail/../tests/mail_test_helpers";
 import { beforeEach, describe, expect, test } from "@odoo/hoot";
 import { waitUntil } from "@odoo/hoot-dom";
-import { mockService, mountWithCleanup, onRpc } from "@web/../tests/web_test_helpers";
-import { Avatar } from "@mail/views/web/fields/avatar/avatar";
+import { mockService, onRpc } from "@web/../tests/web_test_helpers";
 
 describe.current.tags("desktop");
 defineMailModels();
@@ -50,7 +49,7 @@ async function openPartner(values) {
 test("phone field: send to that number", async () => {
     const { partnerId } = await openPartner();
     await click(".o_field_phone .o_input");
-    await click(".o_field_phone .o_om_whatsapp_phone");
+    await click(".o_field_phone .o_phone_form_link[title='WhatsApp']");
     await waitUntil(() => composers.length === 1);
     expect(composers[0].context).toMatchObject({
         active_model: "res.partner",
@@ -63,8 +62,8 @@ test("phone field: no button without the group, or when turned off", async () =>
     inGroup = false;
     await openPartner();
     await click(".o_field_phone .o_input");
-    await contains(".o_field_phone .o_phone_form_link");
-    await contains(".o_field_phone .o_om_whatsapp_phone", { count: 0 });
+    await contains(".o_field_phone .o_phone_form_link[title='Call']");
+    await contains(".o_field_phone .o_phone_form_link[title='WhatsApp']", { count: 0 });
 });
 
 test("phone field: option enable_whatsapp", async () => {
@@ -75,8 +74,8 @@ test("phone field: option enable_whatsapp", async () => {
         arch: `<form><field name="phone" widget="phone" options="{'enable_whatsapp': false}"/></form>`,
     });
     await click(".o_field_phone .o_input");
-    await contains(".o_field_phone .o_phone_form_link");
-    await contains(".o_field_phone .o_om_whatsapp_phone", { count: 0 });
+    await contains(".o_field_phone .o_phone_form_link[title='Call']");
+    await contains(".o_field_phone .o_phone_form_link[title='WhatsApp']", { count: 0 });
 });
 
 test("chatter: WhatsApp next to Log note", async () => {
@@ -97,24 +96,25 @@ test("chatter: no button without the group", async () => {
 
 test("avatar card: WhatsApp for a contact with a phone", async () => {
     const pyEnv = await startServer();
-    // the avatar card of Odoo 18 is the one of a user: the WhatsApp goes to their contact
-    const [batmanPartnerId, robinPartnerId] = pyEnv["res.partner"].create([
+    const [threadId, batmanId, robinId] = pyEnv["res.partner"].create([
+        { name: "Gotham" },
         { name: "Batman", phone: "+15550100" },
         { name: "Robin" },
     ]);
-    const [batmanId, robinId] = pyEnv["res.users"].create([
-        { name: "Batman", partner_id: batmanPartnerId, phone: "+15550100" },
-        { name: "Robin", partner_id: robinPartnerId },
+    pyEnv["mail.followers"].create([
+        { is_active: true, partner_id: batmanId, res_id: threadId, res_model: "res.partner" },
+        { is_active: true, partner_id: robinId, res_id: threadId, res_model: "res.partner" },
     ]);
     await start();
-    await mountWithCleanup(Avatar, { props: { resId: batmanId, resModel: "res.users", displayName: "Batman" } });
-    await click(".o-mail-Avatar img");
+    await openFormView("res.partner", threadId);
+    await click(".o-mail-Followers-button");
+    await click(".o-mail-Follower-details:contains('Batman')");
     await click(".o_avatar_card .o_avatar_card_whatsapp");
     await waitUntil(() => composers.length === 1);
-    expect(composers[0].context).toMatchObject({ active_model: "res.partner", active_ids: [batmanPartnerId] });
+    expect(composers[0].context).toMatchObject({ active_model: "res.partner", active_ids: [batmanId] });
 
-    await mountWithCleanup(Avatar, { props: { resId: robinId, resModel: "res.users", displayName: "Robin" } });
-    await click(".o-mail-Avatar:contains('Robin') img");
+    await click(".o-mail-Followers-button");
+    await click(".o-mail-Follower-details:contains('Robin')");
     await contains(".o_avatar_card:contains('Robin')");
-    await contains(".o_avatar_card:contains('Robin') .o_avatar_card_whatsapp", { count: 0 });
+    await contains(".o_avatar_card_whatsapp", { count: 0 });
 });

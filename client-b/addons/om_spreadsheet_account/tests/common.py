@@ -11,17 +11,12 @@ CHECK_DASHBOARDS_JS = """
     const names = %(names)s;
     const expected = %(expected)s;
     const { helpers } = odoo.loader.modules.get("@odoo/o-spreadsheet");
-    // Odoo 18: the loader is the one of the dashboard action, not a service: one of our own
-    const { DashboardLoader } = odoo.loader.modules.get(
-        "@spreadsheet_dashboard/bundle/dashboard_action/dashboard_loader"
-    );
-    const env = odoo.__WOWL_DEBUG__.root.env;
-    const loader = new DashboardLoader(env, env.services.orm);
+    const loader = odoo.__WOWL_DEBUG__.root.env.services.spreadsheet_dashboard_loader;
     await loader.load();
     const found = {};
     for (const group of loader.getDashboardGroups()) {
         for (const dashboard of group.dashboards) {
-            found[dashboard.displayName] = dashboard.id;
+            found[dashboard.data.name] = dashboard.data.id;
         }
     }
     const failures = [];
@@ -98,7 +93,7 @@ def built_dashboards(module):
     spec = importlib.util.spec_from_file_location('%s_build_dashboards' % module, path)
     script = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(script)
-    return {name: build().to_odoo_18_json() for name, build in script.DASHBOARDS.items()}
+    return {name: build().to_json() for name, build in script.DASHBOARDS.items()}
 
 
 def shipped_dashboard(module, file_name):
@@ -112,17 +107,12 @@ def check_sample(case, xmlid):
     sample = dashboard._get_sample_dashboard()
     case.assertTrue(sample, 'the sample file of %s exists' % dashboard.name)
     case.assertFalse(sample['pivots'] or sample['lists'] or sample['globalFilters'])
-    # a cell is an object on 18.0 ({'content': ...}), its content alone on 19.0
-    cells = [value.get('content') if isinstance(value, dict) else value
-             for sheet in sample['sheets'] for value in sheet['cells'].values()]
+    cells = [value for sheet in sample['sheets'] for value in sheet['cells'].values()]
     case.assertTrue(cells)
     case.assertFalse([value for value in cells if isinstance(value, str) and value.startswith('=')])
     for sheet in sample['sheets']:
         for figure in sheet['figures']:
-            # the definitions of the charts of a carousel of 19.0, or the chart of 18.0
-            definitions = list(figure['data'].get('chartDefinitions', {}).values()) or [figure['data']]
-            for definition in definitions:
-                # the charts reading a model are the odoo_* ones
-                case.assertFalse(definition.get('type', '').startswith('odoo_'))
+            for definition in figure['data'].get('chartDefinitions', {}).values():
+                case.assertNotEqual(definition['dataSource']['type'], 'odoo')
     # a database without the records of these models shows the sample
     case.assertTrue(dashboard.main_data_model_ids)

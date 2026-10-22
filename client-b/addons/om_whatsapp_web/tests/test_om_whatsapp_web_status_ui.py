@@ -24,7 +24,7 @@ class TestOmWhatsappWebStatusUi(HttpCase):
     def setUpClass(cls):
         super().setUpClass()
         admin = cls.env.ref('base.user_admin')
-        admin.groups_id = [Command.link(cls.env.ref('om_whatsapp_base.group_om_whatsapp_manager').id)]
+        admin.group_ids = [Command.link(cls.env.ref('om_whatsapp_base.group_om_whatsapp_manager').id)]
         cls.account = cls.env['om.whatsapp.account'].create({
             'name': 'Browser', 'provider': 'web', 'user_ids': [Command.set(admin.ids)],
         })

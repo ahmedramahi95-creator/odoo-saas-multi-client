@@ -332,7 +332,7 @@ class AccountCheckFormat(models.Model):
             return ''
         return Markup(
             "@font-face { font-family: '%s'; src: url(data:font/ttf;base64,%s) format('truetype'); }"
-        ) % (self._get_micr_font_family(), Markup(self.micr_font.decode()))  # a binary field reads as base64
+        ) % (self._get_micr_font_family(), Markup(self.micr_font.to_base64()))
 
     def _get_micr_font_family(self):
         self.ensure_one()
@@ -365,7 +365,7 @@ class AccountCheckFormat(models.Model):
         if self.print_micr and not void and bank_account is not None:
             if not bank_account:
                 raise UserError(_('Set the bank account of the journal to print the MICR line of the cheques.'))
-            micr = self._format_micr(check_number, bank_account._om_check_routing_number(), bank_account.acc_number)
+            micr = self._format_micr(check_number, bank_account.clearing_number, bank_account.account_number)
         return {
             'date': self._format_date(date),
             'payee': partner_name or '',

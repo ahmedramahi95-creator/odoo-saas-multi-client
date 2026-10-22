@@ -33,7 +33,7 @@ class TestDashboardInBrowser(AccountTestInvoicingHttpCommon):
     def _accountant_admin(self):
         self.env.ref('base.user_admin').write({
             'company_id': self.env.company.id, 'company_ids': [Command.set(self.env.company.ids)],
-            'groups_id': [Command.link(self.env.ref('account.group_account_user').id),
+            'group_ids': [Command.link(self.env.ref('account.group_account_user').id),
                           Command.link(self.env.ref('account.group_account_manager').id)],
         })
 

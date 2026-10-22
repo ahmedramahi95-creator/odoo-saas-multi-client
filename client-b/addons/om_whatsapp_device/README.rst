@@ -2,7 +2,7 @@
 WhatsApp Connector QR
 =====================
 
-This module links the WhatsApp of a company to Odoo 18 with a QR code, as WhatsApp Web is linked: the
+This module links the WhatsApp of a company to Odoo 20 with a QR code, as WhatsApp Web is linked: the
 account is a linked device of the phone. Messages, PDFs and the replies then go and come from the
 server, without a browser open, through the WhatsApp Bridge of the module, a small Node.js program on
 the server of Odoo. It is a provider of WhatsApp Connector Base (``om_whatsapp_base``).
@@ -73,8 +73,7 @@ Good to know:
   its address in the system parameter ``om_whatsapp_device.odoo_url``.
 * Odoo checks the bridge, and fetches the profile pictures of the customers without a photo, with
   scheduled actions: run Odoo with cron threads (not ``--max-cron-threads=0``).
-* On a server of several databases, Odoo 18 picks the database by its address: give each database
-  its own (dbfilter), and set it in ``om_whatsapp_device.odoo_url``.
+* On a server of several databases, the bridge names its database itself: no dbfilter is needed.
 
 Credits
 =======

@@ -33,7 +33,7 @@ class OmAccessProfile(models.Model):
     def _om_members(self):
         """ Every user carrying the profile, however they got it. """
         self.ensure_one()
-        return self._om_direct_users() | self.group_ids.users
+        return self._om_direct_users() | self.group_ids.all_user_ids
 
     @api.model
     def _om_profiles_of(self, user):
@@ -41,7 +41,7 @@ class OmAccessProfile(models.Model):
         today and the ones of their groups. """
         Assignment = self.env['om.access.profile.assignment'].sudo()
         assigned = Assignment.search([('user_id', '=', user.id), ('state', '=', 'active')]).profile_id
-        by_group = self.sudo().search([('group_ids', 'in', user.groups_id.ids)])
+        by_group = self.sudo().search([('group_ids', 'in', user.all_group_ids.ids)])
         return user.access_profile_ids.sudo() | assigned | by_group
 
 
@@ -62,10 +62,9 @@ class OmAccessProfileAssignment(models.Model):
                              default='planned', required=True, readonly=True)
     active = fields.Boolean(default=True)
 
-    _sql_constraints = [
-        ('check_dates', 'CHECK(date_to IS NULL OR date_to >= date_from)',
-         "An assignment cannot end before it starts."),
-    ]
+    _check_dates = models.Constraint(
+        'CHECK(date_to IS NULL OR date_to >= date_from)',
+        "An assignment cannot end before it starts.")
 
     @api.depends('profile_id', 'user_id')
     def _compute_display_name(self):
@@ -133,5 +132,5 @@ class ResGroups(models.Model):
         # a member added or removed from the group's side changes their profiles
         if {'user_ids', 'implied_ids', 'implied_by_ids'} & set(vals) \
                 and self.env['om.access.profile'].sudo().search_count([('group_ids', '!=', False)], limit=1):
-            self.env.registry.clear_cache('default')
+            self.env.transaction.invalidate_ormcache('default')
         return result

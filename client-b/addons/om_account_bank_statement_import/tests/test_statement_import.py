@@ -42,7 +42,7 @@ class TestStatementImport(AccountTestInvoicingCommon):
         super().setUpClass()
         cls.journal = cls.company_data['default_journal_bank']
         cls.journal.bank_account_id = cls.env['res.partner.bank'].create({
-            'acc_number': '987654321',
+            'account_number': '987654321',
             'partner_id': cls.env.company.partner_id.id,
         })
 

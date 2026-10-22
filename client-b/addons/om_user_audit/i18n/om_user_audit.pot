@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-06 18:24+0000\n"
-"PO-Revision-Date: 2026-10-06 18:24+0000\n"
+"POT-Creation-Date: 2026-10-04 19:55+0000\n"
+"PO-Revision-Date: 2026-10-04 19:55+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -190,14 +190,14 @@ msgid "Detail"
 msgstr ""
 
 #. module: om_user_audit
-#: model:ir.model,name:om_user_audit.model_res_device
-msgid "Devices"
-msgstr ""
-
-#. module: om_user_audit
+#: model:ir.model.fields,field_description:om_user_audit.field_ir_http__display_name
 #: model:ir.model.fields,field_description:om_user_audit.field_om_user_audit_log__display_name
 #: model:ir.model.fields,field_description:om_user_audit.field_om_user_audit_report_wizard__display_name
 #: model:ir.model.fields,field_description:om_user_audit.field_om_user_audit_rule__display_name
+#: model:ir.model.fields,field_description:om_user_audit.field_report_om_user_audit_report_user_activity__display_name
+#: model:ir.model.fields,field_description:om_user_audit.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:om_user_audit.field_res_session__display_name
+#: model:ir.model.fields,field_description:om_user_audit.field_res_users__display_name
 msgid "Display Name"
 msgstr ""
 
@@ -309,14 +309,19 @@ msgid "HTTP Routing"
 msgstr ""
 
 #. module: om_user_audit
+#: model:ir.model.fields,field_description:om_user_audit.field_ir_http__id
 #: model:ir.model.fields,field_description:om_user_audit.field_om_user_audit_log__id
 #: model:ir.model.fields,field_description:om_user_audit.field_om_user_audit_report_wizard__id
 #: model:ir.model.fields,field_description:om_user_audit.field_om_user_audit_rule__id
+#: model:ir.model.fields,field_description:om_user_audit.field_report_om_user_audit_report_user_activity__id
+#: model:ir.model.fields,field_description:om_user_audit.field_res_config_settings__id
+#: model:ir.model.fields,field_description:om_user_audit.field_res_session__id
+#: model:ir.model.fields,field_description:om_user_audit.field_res_users__id
 msgid "ID"
 msgstr ""
 
 #. module: om_user_audit
-#: model:ir.model.fields,field_description:om_user_audit.field_res_device__om_idle
+#: model:ir.model.fields,field_description:om_user_audit.field_res_session__om_idle
 msgid "Idle"
 msgstr ""
 
@@ -571,6 +576,11 @@ msgid "Sequence"
 msgstr ""
 
 #. module: om_user_audit
+#: model:ir.model,name:om_user_audit.model_res_session
+msgid "Session"
+msgstr ""
+
+#. module: om_user_audit
 #: model:ir.model.fields.selection,name:om_user_audit.selection__om_user_audit_log__event__session_end
 msgid "Session Ended"
 msgstr ""
@@ -645,11 +655,6 @@ msgid "Sign-out"
 msgstr ""
 
 #. module: om_user_audit
-#: model:ir.model,name:om_user_audit.model_ir_config_parameter
-msgid "System Parameter"
-msgstr ""
-
-#. module: om_user_audit
 #: model:ir.model.fields,help:om_user_audit.field_res_config_settings__om_audit_excluded_models
 msgid ""
 "Technical data never logged when no rule names it: technical names separated"
@@ -714,6 +719,13 @@ msgid "User Activity"
 msgstr ""
 
 #. module: om_user_audit
+#: model:ir.module.module,summary:base.module_om_user_audit
+msgid ""
+"User Activity Log, Audit Trail, Login History, Active Sessions, Kill "
+"Session, Idle Timeout, Sign-in Alerts, Export Log"
+msgstr ""
+
+#. module: om_user_audit
 #: model:ir.actions.act_window,name:om_user_audit.om_user_audit_report_wizard_action
 #: model:ir.model,name:om_user_audit.model_om_user_audit_report_wizard
 #: model:ir.model,name:om_user_audit.model_report_om_user_audit_report_user_activity
@@ -725,6 +737,11 @@ msgstr ""
 #: model:ir.ui.menu,name:om_user_audit.menu_om_user_audit_root
 #: model_terms:ir.ui.view,arch_db:om_user_audit.res_config_settings_view_form
 msgid "User Audit"
+msgstr ""
+
+#. module: om_user_audit
+#: model:ir.module.module,shortdesc:base.module_om_user_audit
+msgid "User Audit & Sessions"
 msgstr ""
 
 #. module: om_user_audit
@@ -775,6 +792,13 @@ msgstr ""
 #. module: om_user_audit
 #: model_terms:ir.ui.view,arch_db:om_user_audit.om_user_audit_rule_view_form
 msgid "Who"
+msgstr ""
+
+#. module: om_user_audit
+#: model:ir.module.module,description:base.module_om_user_audit
+msgid ""
+"Who signed in, from where, and what they read, changed, exported, imported "
+"and printed; the open sessions, ended in one click. Beta."
 msgstr ""
 
 #. module: om_user_audit

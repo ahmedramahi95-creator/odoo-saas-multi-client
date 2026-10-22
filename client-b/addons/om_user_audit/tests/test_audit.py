@@ -4,10 +4,11 @@ import time
 from datetime import timedelta
 from unittest.mock import patch
 
-from odoo import fields, http
+from odoo import fields
 from odoo.exceptions import AccessDenied
-from odoo.http import root
+from odoo.http.session import session_store
 from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.om_user_audit.models.ir_http import SEEN_KEY
 
@@ -109,7 +110,7 @@ class TestAuditHttp(AuditMixin, HttpCase):
         self.assertEqual((len(read), read.method, read.record_ids), (1, 'web_search_read', str(self.partner.id)))
         data = json.dumps({'model': 'res.partner', 'ids': self.partner.ids, 'domain': [], 'import_compat': False,
                            'fields': [{'name': 'name', 'label': 'Name'}]})
-        self.url_open('/web/export/csv', data={'data': data, 'csrf_token': http.Request.csrf_token(self)})
+        self.url_open('/web/export/csv', data={'data': data, 'csrf_token': self.csrf_token()})
         export = self._logs(user_id=self.user.id, event='export')
         self.assertEqual((len(export), export.record_count), (1, 1))
         # the export reads nothing more in the log
@@ -123,18 +124,20 @@ class TestAuditHttp(AuditMixin, HttpCase):
         self.assertIn('Read Me', self.url_open(f'/report/html/om_user_audit.test_partner/{self.partner.id}').text)
         printed = self._logs(user_id=self.user.id, event='print')
         self.assertEqual((len(printed), printed.res_id, printed.detail), (1, self.partner.id, 'Partner Sheet'))
-        self.url_open('/web/session/logout', data={'csrf_token': http.Request.csrf_token(self)})
+        self.url_open('/web/session/logout', data={'csrf_token': self.csrf_token()})
         self.assertEqual(len(self._logs(user_id=self.user.id, event='logout')), 1)
 
     def test_a_failed_sign_in_survives_the_rollback(self):
-        # Odoo 18 signs in on a cursor of its own, and the failure is logged on
-        # another: go through the sign-in form, as a person does
-        self.authenticate(None, None)
-        self.url_open('/web/login', data={
-            'login': self.user.login, 'password': 'wrong', 'csrf_token': http.Request.csrf_token(self)})
+        with self.assertRaises(AccessDenied):
+            self.env['res.users'].with_context(active_test=False)._login(
+                {'login': self.user.login, 'password': 'wrong', 'type': 'password'}, {'interactive': True})
+        # what a rollback does: drop the commit hooks and their data, then run the rollback hooks
+        self.env.cr.postcommit.clear()
+        self.env.cr.postrollback.run()
         failed = self._logs(event='login_failed', login=self.user.login)
         self.assertEqual((len(failed), failed.user_id), (1, self.user))
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc')
     def test_xmlrpc_reads_are_logged_with_the_address(self):
         self.xmlrpc_object.execute_kw(self.env.cr.dbname, self.user.id, self.password,
                                       'res.partner', 'read', [self.partner.ids, ['name']])
@@ -146,7 +149,7 @@ class TestAuditHttp(AuditMixin, HttpCase):
         self.env['ir.config_parameter'].sudo().set_int('om_user_audit.idle_minutes', 5)
         session = self.authenticate(self.user.login, self.password)
         session[SEEN_KEY] = time.time() - 600
-        root.session_store.save(session)
+        session_store().save(session)
         response = self.url_open('/odoo', allow_redirects=False)
         self.assertIn('/web/login', response.headers.get('Location', ''))
         self.assertEqual(len(self._logs(user_id=self.user.id, event='session_end')), 1)
@@ -155,7 +158,7 @@ class TestAuditHttp(AuditMixin, HttpCase):
         """ Sign in through the login form, as a person does. """
         self.authenticate(None, None)
         response = self.url_open('/web/login', data={
-            'login': self.user.login, 'password': self.password, 'csrf_token': http.Request.csrf_token(self)},
+            'login': self.user.login, 'password': self.password, 'csrf_token': self.csrf_token()},
             allow_redirects=False)
         self.assertEqual(response.status_code, 303)
 
@@ -164,7 +167,7 @@ class TestAuditHttp(AuditMixin, HttpCase):
         self.authenticate(self.user.login, self.password, session_extra={'_trace_disable': False})
         self.url_open('/odoo')
         self.env.invalidate_all()
-        sessions = self.env['res.device'].sudo().search([('user_id', '=', self.user.id)])
+        sessions = self.env['res.session'].sudo().search([('user_id', '=', self.user.id)])
         self.assertTrue(sessions)
         sessions.with_user(self.env.ref('base.user_admin')).action_om_end()
         response = self.url_open('/odoo', allow_redirects=False)

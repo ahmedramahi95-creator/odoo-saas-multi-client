@@ -16,14 +16,15 @@ class ReportDayBook(models.AbstractModel):
         if form_data['target_move'] == 'posted':
             target_move = "AND m.state = 'posted'"
         else:
-            # "All Entries" means draft + posted, never cancelled ones
             target_move = "AND m.state != 'cancel'"
 
         sql = ("""
                     SELECT 0 AS lid, 
                           l.account_id AS account_id, l.date AS ldate, j.code AS lcode, 
                           l.amount_currency AS amount_currency,l.ref AS lref,l.name AS lname, 
-                          COALESCE(SUM(l.credit),0.0) AS credit,COALESCE(l.debit,0) AS debit,COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) as balance, 
+                          COALESCE(SUM(l.credit),0.0) AS credit,COALESCE(l.debit,0) AS debit,"""
+               """COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) as balance, """
+               """
                               m.name AS move_name, 
                               c.symbol AS currency_code, 
                               p.name AS lpartner_id, 
@@ -35,13 +36,13 @@ class ReportDayBook(models.AbstractModel):
                               LEFT JOIN res_partner p ON (l.partner_id = p.id) 
                               JOIN account_journal j ON (l.journal_id = j.id) 
                               JOIN account_account acc ON (l.account_id = acc.id) 
-                            WHERE
-                              l.account_id IN %s
-                              AND l.journal_id IN %s """ + target_move + """
-                              AND l.company_id IN %s
-                              AND l.display_type NOT IN ('line_section', 'line_note')
-                              AND l.date = %s
-                            GROUP BY
+                            WHERE 
+                              l.account_id IN %s 
+                              AND l.journal_id IN %s """ + target_move + """ 
+                              AND l.company_id IN %s 
+                              AND l.display_type NOT IN ('line_section', 'line_note') 
+                              AND l.date = %s 
+                            GROUP BY 
                               l.id, 
                               l.account_id, 
                               l.date, 
@@ -96,7 +97,8 @@ class ReportDayBook(models.AbstractModel):
             dates.append(date_from + timedelta(days=day))
         for date in dates:
             date_data = str(date)
-            accounts_res = self.with_context(data['form'].get('comparison_context', {}))._get_account_move_entry(accounts, form_data, date_data)
+            accounts_res = self.with_context(
+                data['form'].get('comparison_context', {}))._get_account_move_entry(accounts, form_data, date_data)
             if accounts_res['lines']:
                 record.append({
                     'date': date,

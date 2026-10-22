@@ -81,7 +81,6 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <t t-set="taxes" t-value="get_taxes(data, o)"/>
                                         <tr t-foreach="taxes" t-as="tax">
                                             <td><span t-out="tax.name"/></td>
                                             <td class="text-end text-nowrap"><span t-out="taxes[tax]['base_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>

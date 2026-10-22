@@ -51,7 +51,7 @@ class FollowupPrint(models.TransientModel):
                 nbprints += 1
                 message = _("Follow-up letter of %s will be sent",
                             Markup("<i>%s</i>") % partner.partner_id.latest_followup_level_id.name)
-                partner.partner_id._followup_chatter().message_post(body=message)
+                partner.partner_id.message_post(body=message)
         paragraph = Markup("<p>%s</p>")
         if nbunknownmails == 0:
             resulttext = paragraph % _("%s email(s) sent", nbmails)
@@ -93,7 +93,7 @@ class FollowupPrint(models.TransientModel):
         paid = partners.filtered(lambda partner: partner.payment_amount_due <= 0)
         done = activities.filtered(lambda activity: activity.res_id in paid.ids)
         if done:
-            done.sudo().action_feedback(feedback=_('Nothing is due any more.'))
+            done.action_feedback(feedback=_('Nothing is due any more.'))
         return len(paid)
 
     def do_process(self):

@@ -1,33 +1,19 @@
 import { _t } from "@web/core/l10n/translation";
 import * as spreadsheet from "@odoo/o-spreadsheet";
 import { EvaluationError } from "@odoo/o-spreadsheet";
-import { OdooUIPlugin } from "@spreadsheet/plugins";
+import { OdooEvaluationPlugin } from "@spreadsheet/plugins";
 import { toServerDateString } from "@spreadsheet/helpers/helpers";
+import { computeFormatFromCurrency } from "@spreadsheet/currency/helpers";
 
-const { functionRegistry, featurePluginRegistry } = spreadsheet.registries;
+const { functionRegistry, evaluationPluginRegistry } = spreadsheet.registries;
 const { arg, toBoolean, toJsDate, toString } = spreadsheet.helpers;
 
 /**
  * The balances of the account types over any period, for the companies selected in the company switcher. The
  * accounting formulas of Odoo read one company only, over a year, a quarter, a month or a fiscal year to date.
  */
-export class OmAccountingPlugin extends OdooUIPlugin {
+export class OmAccountingPlugin extends OdooEvaluationPlugin {
     static getters = /** @type {const} */ (["getOmAccountBalance"]);
-
-    constructor(config) {
-        super(config);
-        /** @type {import("@spreadsheet/data_sources/server_data").ServerData} */
-        this._serverData = config.custom.odooDataProvider?.serverData;
-    }
-
-    get serverData() {
-        if (!this._serverData) {
-            throw new Error(
-                "'serverData' is not defined, please make sure a 'OdooDataProvider' instance is provided to the model."
-            );
-        }
-        return this._serverData;
-    }
 
     /**
      * @param {string[]} accountTypes
@@ -37,7 +23,7 @@ export class OmAccountingPlugin extends OdooUIPlugin {
      * @returns {number}
      */
     getOmAccountBalance(accountTypes, dateFrom, dateTo, includeUnposted) {
-        const result = this.serverData.batch.get(
+        const result = this.getters.getServerData().batch.get(
             "account.move.line",
             "om_spreadsheet_fetch_balance",
             {
@@ -51,7 +37,7 @@ export class OmAccountingPlugin extends OdooUIPlugin {
     }
 }
 
-featurePluginRegistry.add("omAccountingBalances", OmAccountingPlugin);
+evaluationPluginRegistry.add("omAccountingBalances", OmAccountingPlugin);
 
 function toServerDate(value, locale) {
     if (value?.value === undefined || value.value === null || value.value === "") {
@@ -98,9 +84,10 @@ functionRegistry.add("OM.ACCOUNT.BALANCE", {
             toServerDate(dateTo, this.locale),
             toBoolean(includeUnposted)
         );
+        const currency = this.getters.getCompanyCurrency(null);
         return {
             value: balance,
-            format: this.getters.getCompanyCurrencyFormat(null) || "#,##0.00",
+            format: (currency && computeFormatFromCurrency(currency)) || "#,##0.00",
         };
     },
 });

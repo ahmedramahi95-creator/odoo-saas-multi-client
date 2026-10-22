@@ -17,11 +17,11 @@
                     <div class="content-group">
                         <div class="row mt8">
                             <label for="rate_interval" string="Update" class="col-lg-4 o_light_label"/>
-                            <field name="rate_interval" required="1"/>
+                            <field name="rate_interval"/>
                         </div>
                         <div class="row">
                             <label for="rate_provider" string="Source" class="col-lg-4 o_light_label"/>
-                            <field name="rate_provider" required="1"/>
+                            <field name="rate_provider"/>
                         </div>
                         <div class="row">
                             <label for="rate_fallback_provider" string="Backup Source" class="col-lg-4 o_light_label"/>
@@ -44,7 +44,7 @@
                         </div>
                         <div class="row">
                             <label for="rate_date_policy" string="Rate Date" class="col-lg-4 o_light_label"/>
-                            <field name="rate_date_policy" required="1"/>
+                            <field name="rate_date_policy"/>
                         </div>
                         <div class="row">
                             <label for="rate_max_change" string="Maximum Change (%)" class="col-lg-4 o_light_label"/>
@@ -63,8 +63,8 @@
                             <div class="text-muted small"><field name="rate_last_message"/></div>
                         </div>
                         <div class="mt8">
-                            <button name="action_test_currency_rates" type="object" string="Test Connection" class="btn-link" icon="fa-wifi"/>
-                            <button name="action_update_currency_rates" type="object" string="Update Now" class="btn-link" icon="fa-refresh"/>
+                            <button name="action_test_currency_rates" type="object" string="Test Connection" class="btn-link" icon="wifi"/>
+                            <button name="action_update_currency_rates" type="object" string="Update Now" class="btn-link" icon="refresh"/>
                         </div>
                     </div>
                 </setting>

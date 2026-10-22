@@ -178,28 +178,3 @@ class Base(models.AbstractModel):
                 'import', model=self._name, method='load', record_ids=ids,
                 detail=', '.join(fields))])
         return result
-
-
-class BaseClearCache(models.AbstractModel):
-    """ Odoo 20 clears the cache named by a model's _clear_cache_name when its
-    records change; the models of these modules rely on it. """
-    _inherit = 'base'
-
-    def _om_clear_cache(self):
-        if cache_name := getattr(self, '_clear_cache_name', ''):
-            self.env.registry.clear_cache(cache_name)
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
-        records._om_clear_cache()
-        return records
-
-    def write(self, vals):
-        result = super().write(vals)
-        self._om_clear_cache()
-        return result
-
-    def unlink(self):
-        self._om_clear_cache()
-        return super().unlink()

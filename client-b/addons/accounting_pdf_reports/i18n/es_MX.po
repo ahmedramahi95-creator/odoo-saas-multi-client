@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -241,6 +241,13 @@ msgid "Accounting Report"
 msgstr "Reporte de Contabilidad"
 
 #. module: accounting_pdf_reports
+#: model:ir.module.module,description:base.module_accounting_pdf_reports
+msgid ""
+"Accounting Reports For Odoo 20, Annual Report, Accounting Financial Reports,"
+" Odoo 20 Financial Reports"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__account_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__account_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__account_ids
@@ -380,6 +387,11 @@ msgid "Annual Report"
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.module.module,summary:base.module_accounting_pdf_reports
+msgid "Annual Report and Accounting Reports For Odoo 20"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #. odoo-python
 #: code:addons/accounting_pdf_reports/report/report_annual.py:0
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_annual
@@ -461,6 +473,11 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.accounting_tax_report_view
 msgid "Cancel"
 msgstr "Cancelar"
+
+#. module: accounting_pdf_reports
+#: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_equity_accounts0
+msgid "Capital and Reserves"
+msgstr ""
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account__cash_flow_activity
@@ -751,6 +768,7 @@ msgid "Display Debit/Credit Columns"
 msgstr "Mostrar Columnas de Debe/Haber"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_annual_report__display_name
@@ -761,11 +779,21 @@ msgstr "Mostrar Columnas de Debe/Haber"
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_move_line__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_agedpartnerbalance__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_annual__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_cash_flow__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_financial__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_general_ledger__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_journal__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_partnerledger__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_trialbalance__display_name
 msgid "Display Name"
 msgstr "Nombre mostrado"
 
@@ -824,6 +852,7 @@ msgstr "Etiqueta del asiento"
 #. odoo-python
 #: code:addons/accounting_pdf_reports/report/report_cash_flow.py:0
 #: model:account.account.type,name:accounting_pdf_reports.data_account_type_equity
+#: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_equity0
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__equity
 msgid "Equity"
 msgstr "Capital"
@@ -881,8 +910,6 @@ msgstr "Estilo de Reporte Financiero"
 #: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_financial_report_tree
 #: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_financial
 #: model:ir.ui.menu,name:accounting_pdf_reports.menu_account_reports
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_legal_statement
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_reports_settings
 msgid "Financial Reports"
 msgstr "Reportes Financieros"
 
@@ -970,11 +997,7 @@ msgid "General Ledger Report"
 msgstr "Reporte de Libro Mayor"
 
 #. module: accounting_pdf_reports
-#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_search
-msgid "Group By"
-msgstr "Agrupar por"
-
-#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_annual_report__id
@@ -985,11 +1008,21 @@ msgstr "Agrupar por"
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_move_line__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_agedpartnerbalance__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_annual__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_cash_flow__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_financial__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_general_ledger__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_journal__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_partnerledger__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_trialbalance__id
 msgid "ID"
 msgstr "ID (identificación)"
 
@@ -1166,9 +1199,13 @@ msgstr "Nivel"
 
 #. module: accounting_pdf_reports
 #: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_liability0
+msgid "Liabilities"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_liabilitysum0
-msgid "Liability"
-msgstr "Pasivo"
+msgid "Liabilities and Equity"
+msgstr ""
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_annual
@@ -1282,6 +1319,11 @@ msgid "Notes to the financial statements, printed at the end of the report."
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.module.module,shortdesc:base.module_accounting_pdf_reports
+msgid "Odoo 20 Accounting Financial Reports"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:account.account.type,name:accounting_pdf_reports.data_account_off_sheet
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__off_balance
 msgid "Off-Balance Sheet"
@@ -1351,11 +1393,6 @@ msgstr ""
 #: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_partnerledger
 msgid "Partner Ledger Report"
 msgstr "Reporte del libro mayor de empresa"
-
-#. module: accounting_pdf_reports
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_partner_reports
-msgid "Partner Reports"
-msgstr "Reporte de empresas"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__result_selection
@@ -1655,11 +1692,6 @@ msgid "Tax Reports"
 msgstr "Reportes de Impuestos"
 
 #. module: accounting_pdf_reports
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_taxes_and_fiscal
-msgid "Taxes & Fiscal"
-msgstr ""
-
-#. module: accounting_pdf_reports
 #. odoo-python
 #: code:addons/accounting_pdf_reports/report/report_cash_flow.py:0
 msgid "Taxes, salaries and other current liabilities"
@@ -1866,8 +1898,8 @@ msgstr "Debe establecer una duración del período superior a 0."
 #. module: accounting_pdf_reports
 #. odoo-python
 #: code:addons/accounting_pdf_reports/wizard/aged_partner.py:0
-msgid "You must set a start date."
-msgstr "Debe establecer una fecha de inicio."
+msgid "You must set an as of date."
+msgstr ""
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_annual

@@ -33,7 +33,7 @@
                         <setting id="om_audit_rules" string="What to Log"
                                  help="With no rule, everything but the technical data below.">
                             <button name="%(om_user_audit.om_user_audit_rule_action)d" type="action"
-                                    string="Rules" icon="fa-arrow-right" class="btn-link"/>
+                                    string="Rules" icon="east" class="btn-link"/>
                             <div class="mt-2">
                                 <label for="om_audit_excluded_models" class="o_light_label"/>
                                 <field name="om_audit_excluded_models" class="w-100"/>

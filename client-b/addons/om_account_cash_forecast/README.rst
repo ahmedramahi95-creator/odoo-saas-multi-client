@@ -1,8 +1,8 @@
 =====================
-Odoo 18 Cash Forecast
+Odoo 20 Cash Forecast
 =====================
 
-This module prints a cash forecast for Odoo 18 Community Edition: starting from the balance of the
+This module prints a cash forecast for Odoo 20 Community Edition: starting from the balance of the
 Bank and Cash accounts, it shows the receipts and payments expected week by week or month by month
 and the resulting closing balance.
 

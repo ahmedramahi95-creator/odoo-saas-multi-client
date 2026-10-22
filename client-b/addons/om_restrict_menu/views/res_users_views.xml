@@ -13,7 +13,6 @@
                         hidden in the current company are hidden as well. Administrators always keep the
                         Settings app.
                     </p>
-                    <field name="share" invisible="1"/>
                     <field name="om_hidden_menu_ids">
                         <list>
                             <field name="complete_name" string="Menu"/>

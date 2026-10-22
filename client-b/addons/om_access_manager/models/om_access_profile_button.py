@@ -48,10 +48,10 @@ class OmAccessProfileButton(models.Model):
              "can still work around. Blocking refuses the call on the server. "
              "Keep both unless you have a reason not to.")
 
-    _sql_constraints = [
-        ('unique_button', 'UNIQUE(profile_id, model_id, view_type, button_type, button_name, button_id)',
-         'A profile can only carry one rule per button.'),
-    ]
+    _unique_button = models.Constraint(
+        'UNIQUE(profile_id, model_id, view_type, button_type, button_name, button_id)',
+        'A profile can only carry one rule per button.',
+    )
 
     @api.depends('button_label', 'button_name')
     def _compute_display_name(self):

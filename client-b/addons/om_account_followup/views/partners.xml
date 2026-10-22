@@ -32,6 +32,7 @@
                     <field name="payment_earliest_due_date" string="Oldest Due Date" optional="show"/>
                     <field name="followup_promise_date" optional="hide"/>
                     <field name="payment_responsible_id" widget="many2one_avatar_user" optional="show"/>
+                    <field name="followup_plan_id" optional="hide"/>
                     <field name="followup_currency_id" column_invisible="1"/>
                     <field name="payment_amount_overdue" widget="monetary" sum="Total"
                            options="{'currency_field': 'followup_currency_id'}"/>
@@ -85,8 +86,7 @@
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_tree"/>
             <field name="arch" type="xml">
-                <!-- the name column of the contacts is complete_name on 18 -->
-                <field name="complete_name" position="after">
+                <field name="display_name" position="after">
                     <field name="payment_responsible_id" column_invisible="1"/>
                 </field>
             </field>
@@ -100,6 +100,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//search" position="inside">
                     <field name="payment_responsible_id"/>
+                    <field name="followup_plan_id"/>
                     <separator/>
                     <filter string="Action Needed" name="filter_action_needed"
                             domain="[('followup_status', '=', 'in_need_of_action')]"/>
@@ -118,6 +119,8 @@
                     <group>
                         <filter string="Follow-up Responsible" name="responsibe"
                                 context="{'group_by': 'payment_responsible_id'}"/>
+                        <filter string="Follow-up Plan" name="group_plan"
+                                context="{'group_by': 'followup_plan_id'}"/>
                     </group>
                 </xpath>
             </field>
@@ -233,6 +236,8 @@
                                        decoration-danger="followup_status == 'in_need_of_action'"
                                        decoration-info="followup_status == 'with_overdue_invoices'"
                                        decoration-warning="followup_status == 'promise'"/>
+                                <field name="followup_plan_id" placeholder="Default plan"
+                                       options="{'no_create': True}"/>
                                 <field name="latest_followup_level_id" string="Last Reminder"
                                        invisible="not latest_followup_level_id"/>
                                 <field name="latest_followup_date" invisible="not latest_followup_date"/>

@@ -1,8 +1,8 @@
 =============================
-Odoo 18 Accounting Dashboards
+Odoo 20 Accounting Dashboards
 =============================
 
-This module adds accounting dashboards to the Dashboards app of Odoo 18 Community Edition. They are
+This module adds accounting dashboards to the Dashboards app of Odoo 20 Community Edition. They are
 spreadsheets computed from the account types, so they work with any chart of accounts, and they sit in
 the Finance section next to the Invoicing dashboard of Odoo.
 

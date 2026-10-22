@@ -63,7 +63,7 @@
         <field name="model_id" ref="om_access_manager.model_om_access_profile"/>
         <field name="binding_model_id" ref="om_access_manager.model_om_access_profile"/>
         <field name="binding_view_types">list,form</field>
-        <field name="groups_id" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="group_ids" eval="[(4, ref('group_access_manager'))]"/>
         <field name="state">code</field>
         <field name="code">action = records.action_export_profiles()</field>
     </record>
@@ -140,7 +140,7 @@
         <field name="res_model">om.access.assign</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
-        <field name="groups_id" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="group_ids" eval="[(4, ref('group_access_manager'))]"/>
         <field name="binding_model_id" ref="base.model_res_users"/>
         <field name="binding_view_types">list,form</field>
     </record>
@@ -182,7 +182,7 @@
         <field name="res_model">om.access.copy.access</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
-        <field name="groups_id" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="group_ids" eval="[(4, ref('group_access_manager'))]"/>
         <field name="binding_model_id" ref="base.model_res_users"/>
         <field name="binding_view_types">form</field>
     </record>
@@ -381,8 +381,10 @@
                 <field name="report" nolabel="1" readonly="1"/>
                 <footer>
                     <button name="action_open_preview" type="object" string="Open Preview"
-                            class="btn-primary" icon="fa-eye" invisible="not user_id"
+                            class="btn-primary" icon="visibility" invisible="not user_id"
                             data-hotkey="q"/>
+                    <button name="action_explain" type="object" string="Why?"
+                            icon="help" invisible="not user_id"/>
                     <button string="Close" class="btn-secondary" special="cancel"
                             data-hotkey="x"/>
                 </footer>
@@ -393,6 +395,45 @@
     <record id="om_access_test_user_action" model="ir.actions.act_window">
         <field name="name">Effective Access</field>
         <field name="res_model">om.access.test.user</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+
+    <record id="om_access_explain_view_form" model="ir.ui.view">
+        <field name="name">om.access.explain.form</field>
+        <field name="model">om.access.explain</field>
+        <field name="arch" type="xml">
+            <form string="Why?">
+                <group>
+                    <group>
+                        <field name="user_id" options="{'no_create': True}"/>
+                        <field name="model_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="operation"/>
+                        <field name="res_id" invisible="operation == 'create'"/>
+                        <field name="record_name" invisible="not record_name or operation == 'create'"/>
+                    </group>
+                </group>
+                <field name="verdict" invisible="1"/>
+                <div class="text-muted mb-2" invisible="report">
+                    Choose a user, the data and what they want to do with it: the answer of Odoo
+                    itself, then of the access profiles, shows here. Give a record id to check one record.
+                </div>
+                <field name="report" nolabel="1" readonly="1"/>
+                <footer>
+                    <button name="action_preview" type="object" string="Preview as User"
+                            class="btn-primary" icon="visibility" invisible="not user_id" data-hotkey="q"/>
+                    <button string="Close" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_explain_action" model="ir.actions.act_window">
+        <field name="name">Why?</field>
+        <field name="res_model">om.access.explain</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>

@@ -2,14 +2,14 @@
 <templates xml:space="preserve">
     <t t-name="om_whatsapp_device.DeviceLink">
         <div class="o_om_whatsapp_device_link p-3 text-center">
-            <t t-set="status" t-value="state.status"/>
+            <t t-set="status" t-value="this.state.status"/>
 
             <div t-if="status.state === 'linked'" class="py-4">
                 <div class="display-4 text-success">✓</div>
                 <h4>Linked<t t-if="status.number"> to <t t-out="status.number"/></t></h4>
                 <p class="text-muted">Odoo sends and receives with this WhatsApp from now on. It shows in the linked devices
                     of the phone, as WhatsApp Web does.</p>
-                <button class="btn btn-primary" t-on-click="close">Close</button>
+                <button class="btn btn-primary" t-on-click="() => this.close()">Close</button>
             </div>
 
             <div t-elif="status.state === 'offline'" class="py-4">
@@ -42,18 +42,18 @@
                     </div>
                 </div>
                 <p class="text-muted small">The code changes by itself every few seconds: scan the one shown.</p>
-                <div t-if="!state.withCode">
-                    <button class="btn btn-link" t-on-click="() => state.withCode = true">Link with a phone number instead</button>
+                <div t-if="!this.state.withCode">
+                    <button class="btn btn-link" t-on-click="() => this.state.withCode = true">Link with a phone number instead</button>
                 </div>
                 <div t-else="" class="d-flex gap-2 justify-content-center mt-2">
-                    <input class="form-control w-auto" type="tel" placeholder="e.g. +965 5555 1234" t-att-value="state.phone"
-                           t-on-input="(ev) => state.phone = ev.target.value"/>
-                    <button class="btn btn-primary" t-on-click="linkWithCode">Get a code</button>
+                    <input class="form-control w-auto" type="tel" placeholder="e.g. +965 5555 1234" t-att-value="this.state.phone"
+                           t-on-input="(ev) => this.state.phone = ev.target.value"/>
+                    <button class="btn btn-primary" t-on-click="() => this.linkWithCode()">Get a code</button>
                 </div>
             </div>
 
             <p t-if="status.reason and status.state !== 'offline'" class="text-muted small mt-2" t-out="status.reason"/>
-            <p t-if="state.error" class="text-danger mt-2" t-out="state.error"/>
+            <p t-if="this.state.error" class="text-danger mt-2" t-out="this.state.error"/>
         </div>
     </t>
 </templates>

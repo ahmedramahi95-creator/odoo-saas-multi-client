@@ -4,6 +4,7 @@ from lxml import etree
 from odoo.exceptions import AccessError
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
+from odoo.tools import mute_logger
 
 
 @tagged('post_install', '-at_install')
@@ -74,16 +75,13 @@ class TestMenusAndChatter(HttpCase):
             'post_data': {'body': 'Hello', 'message_type': 'comment', 'subtype_xmlid': subtype},
         })
 
+    @mute_logger('odoo.http')
     def test_send_message_is_refused_and_log_note_is_not(self):
         self._profile(hide_send_message_all=True)
         self.authenticate(self.user.login, self.password)
         with self.assertRaises(JsonRpcException):
             self._post('mail.mt_comment')
-        self._post('mail.mt_note')
-        # Odoo 18 answers with the data of the chatter: look for the note itself
-        self.assertTrue(self.env['mail.message'].search_count([
-            ('model', '=', 'res.partner'), ('res_id', '=', self.partner.id),
-            ('subtype_id', '=', self.env.ref('mail.mt_note').id), ('body', 'ilike', 'Hello')]))
+        self.assertTrue(self._post('mail.mt_note')['message_id'])
 
     def test_home_page(self):
         action = self.env['ir.actions.act_window'].create({'name': 'Landing', 'res_model': 'res.partner'})

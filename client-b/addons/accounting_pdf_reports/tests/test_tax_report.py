@@ -80,13 +80,13 @@ class TestTaxReport(AccountTestInvoicingCommon):
     def test_a_withholding_tax_is_counted_once_and_apart(self):
         """ With l10n_account_withholding_tax: the tax withheld on a payment is in a section of its own, its
         base counted once, on the payment, not on the bill too. """
-        if 'is_withholding_tax_on_payment' not in self.env['account.tax']._fields:
+        if 'is_withholding_tax' not in self.env['account.tax']._fields:
             self.skipTest('l10n_account_withholding_tax is not installed')
         self.env.company.withholding_tax_base_account_id = self.env['account.account'].create({
             'code': 'WITHB', 'name': 'Withholding Tax Base', 'account_type': 'asset_current'})
         sequence = self.env['ir.sequence'].create({'implementation': 'no_gap', 'name': 'Withholding', 'padding': 4})
         withholding = self.tax_purchase_a.copy({
-            'name': 'Withholding 5%', 'amount': -5, 'is_withholding_tax_on_payment': True, 'withholding_sequence_id': sequence.id})
+            'name': 'Withholding 5%', 'amount': -5, 'is_withholding_tax': True, 'withholding_sequence_id': sequence.id})
         bill = self.env['account.move'].create({
             'move_type': 'in_invoice', 'partner_id': self.partner_a.id, 'invoice_date': '2025-06-01',
             'date': '2025-06-01',

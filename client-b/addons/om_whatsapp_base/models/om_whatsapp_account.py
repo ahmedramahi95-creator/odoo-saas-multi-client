@@ -8,6 +8,7 @@ from odoo.exceptions import UserError
 from odoo.http import request
 from odoo.tools.translate import LazyTranslate
 
+from odoo.addons.mail.tools.discuss import Store
 
 _lt = LazyTranslate(__name__)
 _logger = logging.getLogger(__name__)
@@ -270,7 +271,7 @@ class OmWhatsappAccount(models.Model):
                 elif not partner.image_1920:
                     partner.image_1920 = data
                     # the conversation shows it: its open pages get the new avatar
-                    channel._bus_send_store(channel, {'avatarCacheKey': channel.avatar_cache_key})
+                    Store(bus_channel=channel).add(channel, ['avatar_cache_key'])
         except Exception as error:  # noqa: BLE001
             _logger.info("WhatsApp picture of %s not kept: %s", number, error)
             return False

@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 18 Follow-ups and Cash Forecast Dashboard',
+    'name': 'Odoo 20 Follow-ups and Cash Forecast Dashboard',
     'version': '1.0.0',
     'category': 'Accounting',
     'summary': 'Follow-ups and cash forecast dashboard in the Dashboards app: overdue balances and expected '

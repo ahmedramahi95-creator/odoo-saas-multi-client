@@ -16,7 +16,7 @@ except ImportError:  # Windows
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
-from odoo.tools import config, str2bool
+from odoo.tools import config
 
 from odoo.addons.om_whatsapp_device.tools import BridgeError, WhatsappBridge
 
@@ -56,7 +56,7 @@ class OmWhatsappAccount(models.Model):
     device_key = fields.Char('Session', readonly=True, copy=False, default=lambda self: secrets.token_urlsafe(18),
                              help="The name of the session of this account in the WhatsApp Bridge.")
     device_bridge_url = fields.Char(
-        'WhatsApp Bridge', default=lambda self: self.env['ir.config_parameter'].sudo().get_param(
+        'WhatsApp Bridge', default=lambda self: self.env['ir.config_parameter'].sudo().get_str(
             'om_whatsapp_device.bridge_url') or DEFAULT_BRIDGE_URL,
         groups='base.group_system',
         help="Where the WhatsApp Bridge of this module runs: on this server, http://127.0.0.1:8077 by default.")
@@ -81,9 +81,7 @@ class OmWhatsappAccount(models.Model):
     device_secret = fields.Char('Secret of the Bridge', compute='_compute_device_secret',
                                 groups='base.group_system')
 
-    _sql_constraints = [
-        ('device_key_unique', 'unique (device_key)', 'A session is the session of one account.'),
-    ]
+    _device_key_unique = models.Constraint('unique (device_key)', 'A session is the session of one account.')
 
     @api.depends('provider')
     def _compute_capabilities(self):
@@ -100,10 +98,10 @@ class OmWhatsappAccount(models.Model):
     def _device_bridge_secret(self):
         """ The secret shared with the WhatsApp Bridge: made on first use. """
         params = self.env['ir.config_parameter'].sudo()
-        secret = params.get_param('om_whatsapp_device.secret')
+        secret = params.get_str('om_whatsapp_device.secret')
         if not secret:
             secret = secrets.token_urlsafe(32)
-            params.set_param('om_whatsapp_device.secret', secret)
+            params.set_str('om_whatsapp_device.secret', secret)
         return secret
 
     def _device_bridge(self):
@@ -113,7 +111,7 @@ class OmWhatsappAccount(models.Model):
     def _device_webhook_url(self):
         """ The bridge runs on this server: it calls Odoo on this server,
         unless the system parameter om_whatsapp_device.odoo_url says where. """
-        url = self.env['ir.config_parameter'].sudo().get_param('om_whatsapp_device.odoo_url')
+        url = self.env['ir.config_parameter'].sudo().get_str('om_whatsapp_device.odoo_url')
         if not url:
             url = f"http://127.0.0.1:{config.get('http_port') or 8069}"
         return url.rstrip('/') + WEBHOOK_PATH
@@ -224,7 +222,7 @@ class OmWhatsappAccount(models.Model):
     def _device_bridge_paths(self):
         """ Node.js, and the folder of the bridge with its packages: what
         starting it needs, or what is missing. """
-        node = self.env['ir.config_parameter'].sudo().get_param('om_whatsapp_device.node') or shutil.which('node')
+        node = self.env['ir.config_parameter'].sudo().get_str('om_whatsapp_device.node') or shutil.which('node')
         if not node:
             raise UserError(_("The WhatsApp Bridge runs on Node.js, version 20 or later: install it on the server "
                               "(e.g. sudo apt install nodejs npm), or give its path in the system parameter "
@@ -242,7 +240,7 @@ class OmWhatsappAccount(models.Model):
         if not self.env.user._is_system():
             raise AccessError(_("Only an administrator of Odoo starts the WhatsApp Bridge."))
         self._device_start_bridge_process()
-        self.env['ir.config_parameter'].sudo().set_param('om_whatsapp_device.autostart', True)
+        self.env['ir.config_parameter'].sudo().set_bool('om_whatsapp_device.autostart', True)
         for _wait in range(20):
             try:
                 self._device_bridge().health()
@@ -298,7 +296,7 @@ class OmWhatsappAccount(models.Model):
             try:
                 account._device_write_state(account._device_bridge().status(account.device_key), checked=True)
             except BridgeError as error:
-                autostart = str2bool(self.env['ir.config_parameter'].sudo().get_param('om_whatsapp_device.autostart'), False)
+                autostart = self.env['ir.config_parameter'].sudo().get_bool('om_whatsapp_device.autostart')
                 if autostart and not restarted:
                     restarted = True
                     try:
@@ -360,7 +358,6 @@ class OmWhatsappAccount(models.Model):
             ('notification_status', '=', 'ready'),
             ('mail_message_id.om_whatsapp_account_id.provider', '=', 'device'),
         ], order='id', limit=limit)
-        sent = 0
         for account in queued.mail_message_id.om_whatsapp_account_id:
             if account.device_state != 'linked':
                 continue
@@ -368,9 +365,7 @@ class OmWhatsappAccount(models.Model):
             for notification in queued.filtered(lambda n: n.mail_message_id.om_whatsapp_account_id == account)[:max(room, 0)]:
                 account._device_send(notification)
                 if self.env.context.get('cron_id'):
-                    sent += 1
-                    self.env['ir.cron']._notify_progress(done=sent, remaining=0)
-                    self.env.cr.commit()
+                    self.env['ir.cron']._commit_progress(1, remaining=0)
 
     def _om_whatsapp_picture_device(self, number):
         """ The profile picture of ``number``, read by the bridge: base64, or False. """

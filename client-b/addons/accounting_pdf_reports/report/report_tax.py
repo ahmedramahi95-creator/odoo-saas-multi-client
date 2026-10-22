@@ -28,8 +28,8 @@ class ReportTax(models.AbstractModel):
         # the base of a withholding tax (l10n_account_withholding_tax) is the one of the payment that withholds
         # it: the invoice or the bill only carries the tax that will be withheld
         withholding = ''
-        if 'is_withholding_tax_on_payment' in self.env['account.tax']._fields:
-            withholding = """AND NOT (COALESCE(t.is_withholding_tax_on_payment, FALSE) AND EXISTS (
+        if 'is_withholding_tax' in self.env['account.tax']._fields:
+            withholding = """AND NOT (COALESCE(t.is_withholding_tax, FALSE) AND EXISTS (
                                  SELECT 1 FROM account_move move
                                   WHERE move.id = "account_move_line".move_id AND move.move_type != 'entry'))"""
         sql = """SELECT r.account_tax_id, COALESCE(SUM("account_move_line".debit-"account_move_line".credit), 0)
@@ -67,15 +67,14 @@ class ReportTax(models.AbstractModel):
         results = self.env.cr.fetchall()
         for result in results:
             if result[0] in taxes:
-                # the withholding module of 18 books the base of a withholding on the side of the tax withheld
-                taxes[result[0]]['net'] = self._amount_sign(taxes[result[0]]) * (result[1] or 0.0)
+                taxes[result[0]]['net'] = self._tax_sign(taxes[result[0]]) * (result[1] or 0.0)
 
     @api.model
     def get_lines(self, options):
         taxes = {}
-        is_withholding = 'is_withholding_tax_on_payment' in self.env['account.tax']._fields
+        is_withholding = 'is_withholding_tax' in self.env['account.tax']._fields
         for tax in self.env['account.tax'].search([('type_tax_use', '!=', 'none')]):
-            withholding = is_withholding and tax.is_withholding_tax_on_payment
+            withholding = is_withholding and tax.is_withholding_tax
             if tax.children_tax_ids:
                 for child in tax.children_tax_ids:
                     if child.type_tax_use != 'none':

@@ -19,7 +19,7 @@ class TestOptionalColumns(AccountTestInvoicingCommon):
         cls.base_user = cls.env.ref('base.group_user')
         cls.reader = cls.env['res.users'].create({
             'name': 'Book Keeper', 'login': 'bookkeeper.columns',
-            'groups_id': [Command.set([cls.base_user.id,
+            'group_ids': [Command.set([cls.base_user.id,
                                        cls.env.ref('account.group_account_manager').id])],
         })
         cls.entry = cls.init_invoice('out_invoice', amounts=[1000.0],
@@ -29,7 +29,7 @@ class TestOptionalColumns(AccountTestInvoicingCommon):
         """ What the Analytic Accounting switch in the settings does. """
         command = Command.link if enabled else Command.unlink
         self.base_user.implied_ids = [command(self.analytic_group.id)]
-        self.reader.groups_id = [command(self.analytic_group.id)]
+        self.reader.group_ids = [command(self.analytic_group.id)]
         self.env.flush_all()
         self.env.invalidate_all()
 

@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -40,6 +40,11 @@ msgstr ""
 #. module: om_recurring_payments
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__activity_exception_decoration
 msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: om_recurring_payments
+#: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__activity_plans_ids
+msgid "Activity Plans"
 msgstr ""
 
 #. module: om_recurring_payments
@@ -168,6 +173,8 @@ msgid "Description..."
 msgstr "Descripción..."
 
 #. module: om_recurring_payments
+#: model:ir.model.fields,field_description:om_recurring_payments.field_account_move__display_name
+#: model:ir.model.fields,field_description:om_recurring_payments.field_account_payment__display_name
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__display_name
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__display_name
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__display_name
@@ -220,11 +227,6 @@ msgid "Followers (Partners)"
 msgstr ""
 
 #. module: om_recurring_payments
-#: model:ir.model.fields,help:om_recurring_payments.field_recurring_payment__activity_type_icon
-msgid "Font awesome icon e.g. fa-tasks"
-msgstr ""
-
-#. module: om_recurring_payments
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__journal_state
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__journal_state
 msgid "Generate Journal As"
@@ -242,6 +244,8 @@ msgid "Has Message"
 msgstr ""
 
 #. module: om_recurring_payments
+#: model:ir.model.fields,field_description:om_recurring_payments.field_account_move__id
+#: model:ir.model.fields,field_description:om_recurring_payments.field_account_payment__id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__id
@@ -315,6 +319,11 @@ msgstr "Última actualización por"
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__write_date
 msgid "Last Updated on"
 msgstr "Última actualización el"
+
+#. module: om_recurring_payments
+#: model:ir.model.fields,help:om_recurring_payments.field_recurring_payment__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
+msgstr ""
 
 #. module: om_recurring_payments
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__message_has_error
@@ -400,6 +409,17 @@ msgid "Number of messages with delivery error"
 msgstr ""
 
 #. module: om_recurring_payments
+#: model:ir.module.module,shortdesc:base.module_om_recurring_payments
+msgid "Odoo 20 Recurring Payment"
+msgstr ""
+
+#. module: om_recurring_payments
+#: model:ir.module.module,description:base.module_om_recurring_payments
+msgid ""
+"Odoo 20 Recurring Payment, Recurring Payment In Odoo, Odoo 20 Accounting"
+msgstr ""
+
+#. module: om_recurring_payments
 #: model_terms:ir.actions.act_window,help:om_recurring_payments.action_move_auto_post
 msgid ""
 "On a draft journal entry, invoice or bill, set Auto-post to post it on its date, or every month,\n"
@@ -426,12 +446,6 @@ msgstr ""
 "curso."
 
 #. module: om_recurring_payments
-#. odoo-python
-#: code:addons/om_recurring_payments/models/recurring_payment.py:0
-msgid "Operator %s is not supported for this search."
-msgstr ""
-
-#. module: om_recurring_payments
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__partner_id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__partner_id
 #: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
@@ -446,6 +460,7 @@ msgid ""
 msgstr ""
 
 #. module: om_recurring_payments
+#: model:ir.model,name:om_recurring_payments.model_account_payment
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__payment_id
 msgid "Payment"
 msgstr "Pago"
@@ -466,11 +481,6 @@ msgstr "Tipo de Pago"
 #: code:addons/om_recurring_payments/models/recurring_payment.py:0
 #: model:mail.activity.type,summary:om_recurring_payments.mail_activity_type_recurring_payment_failed
 msgid "Payment failed"
-msgstr ""
-
-#. module: om_recurring_payments
-#: model:ir.model,name:om_recurring_payments.model_account_payment
-msgid "Payments"
 msgstr ""
 
 #. module: om_recurring_payments
@@ -515,7 +525,6 @@ msgstr "Líneas recurrentes"
 #: model:ir.actions.act_window,name:om_recurring_payments.action_account_recurring_payment
 #: model:ir.model,name:om_recurring_payments.model_recurring_payment
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__recurring_payment_id
-#: model:ir.ui.menu,name:om_recurring_payments.menu_recurring_payments
 #: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_recurring_payment_form
 msgid "Recurring Payment"
 msgstr "Pago recurrente"
@@ -724,20 +733,13 @@ msgid "Un Posted"
 msgstr "Sin contabilizar"
 
 #. module: om_recurring_payments
+#: model:ir.module.module,summary:base.module_om_recurring_payments
+msgid "Use recurring payments to handle periodically repeated payments"
+msgstr ""
+
+#. module: om_recurring_payments
 #: model:ir.model.fields,help:om_recurring_payments.field_recurring_payment__user_id
 msgid "Warned when a payment of this recurring payment cannot be created."
-msgstr ""
-
-#. module: om_recurring_payments
-#: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__website_message_ids
-#: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__website_message_ids
-msgid "Website Messages"
-msgstr ""
-
-#. module: om_recurring_payments
-#: model:ir.model.fields,help:om_recurring_payments.field_account_recurring_template__website_message_ids
-#: model:ir.model.fields,help:om_recurring_payments.field_recurring_payment__website_message_ids
-msgid "Website communication history"
 msgstr ""
 
 #. module: om_recurring_payments

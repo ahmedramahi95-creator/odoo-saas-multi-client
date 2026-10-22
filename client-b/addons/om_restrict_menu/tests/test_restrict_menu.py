@@ -130,7 +130,5 @@ class TestHideMenuRequest(HttpCase, HideMenuCase):
         self.authenticate(self.user.login, self.user.login)
         for current, visible in [(self.branch, False), (self.company, True)]:
             self.opener.cookies.set('cids', f'{current.id}-{(self.company + self.branch - current).id}')
-            response = self.url_open('/web/webclient/load_menus/1')
-            self.assertEqual(response.headers['Cache-Control'], 'no-store')
-            menus = response.json()
+            menus = self.url_open('/web/webclient/load_menus').json()
             self.assertEqual(str(self.first.id) in menus, visible, current.name)

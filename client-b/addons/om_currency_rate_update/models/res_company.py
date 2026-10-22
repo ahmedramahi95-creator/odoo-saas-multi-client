@@ -28,12 +28,10 @@ FAILURES_TO_NOTIFY = 3
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    # Not required: the modules loaded before this one create companies too (a new company, the tests), and
-    # a NOT NULL column they know nothing about refuses them. Empty is read as the default.
     rate_interval = fields.Selection(
         [('manual', 'Manually'), ('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')],
-        string='Update Currency Rates', default='manual')
-    rate_provider = fields.Selection(PROVIDER_SELECTION, string='Rates Source', default='frankfurter')
+        string='Update Currency Rates', default='manual', required=True)
+    rate_provider = fields.Selection(PROVIDER_SELECTION, string='Rates Source', default='frankfurter', required=True)
     rate_fallback_provider = fields.Selection(
         PROVIDER_SELECTION, string='Backup Source',
         help="Gives the rates of the currencies the main source does not quote, or all of them when it fails.")
@@ -44,7 +42,7 @@ class ResCompany(models.Model):
         help="Leave empty to update every active currency.")
     rate_date_policy = fields.Selection(
         [('source', 'Date of the rates at the source'), ('today', 'Day of the update')],
-        string='Date of the Rates', default='source')
+        string='Date of the Rates', default='source', required=True)
     rate_max_change = fields.Float(
         string='Maximum Change (%)',
         help="A rate changing more than this percentage from the previous one is not saved, but reported. "
@@ -96,7 +94,7 @@ class ResCompany(models.Model):
         currencies = self._get_rate_currencies()
         rates, sources, messages = {}, {}, []
         date = None
-        codes = [self.rate_provider or 'frankfurter']
+        codes = [self.rate_provider]
         if self.rate_fallback_provider and self.rate_fallback_provider != self.rate_provider:
             codes.append(self.rate_fallback_provider)
         for code in codes:
@@ -173,7 +171,7 @@ class ResCompany(models.Model):
 
     def _notify_rate_failure(self, messages):
         self.ensure_one()
-        managers = self.env.ref('account.group_account_manager').sudo().users.filtered(
+        managers = self.env.ref('account.group_account_manager').sudo().user_ids.filtered(
             lambda user: self in user.company_ids and not user.share)
         if managers:
             self.env['mail.thread'].sudo().message_notify(
@@ -193,7 +191,7 @@ class ResCompany(models.Model):
     def _cron_update_currency_rates(self):
         today = fields.Date.context_today(self)
         companies = self.search([
-            ('parent_id', '=', False), ('rate_interval', 'not in', ('manual', False)),
+            ('parent_id', '=', False), ('rate_interval', '!=', 'manual'),
             '|', ('rate_next_date', '=', False), ('rate_next_date', '<=', today),
         ])
         for company in companies:

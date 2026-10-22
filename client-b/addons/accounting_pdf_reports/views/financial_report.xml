@@ -63,10 +63,10 @@
                 <field name="type"/>
                 <field name="account_report_id"/>
                 <filter string="Reports" name="filter_parent_id" domain="[('parent_id','=', False)]"/>
-                <group expand="0" string="Group By">
-                    <filter name="parent_report" string="Parent Report" domain=""
+                <group>
+                    <filter name="parent_report" string="Parent Report"
                             context="{'group_by':'parent_id'}"/>
-                    <filter name="report_type" string="Report Type" domain="[]" context="{'group_by':'type'}"/>
+                    <filter name="report_type" string="Report Type" context="{'group_by':'type'}"/>
                 </group>
             </search>
         </field>
@@ -89,14 +89,6 @@
             </p>
         </field>
     </record>
-
-    <!-- the folder the financial reports used to be in, empty now and so not shown: kept for the
-         modules that put their own menus in it -->
-    <menuitem id="menu_finance_reports_settings"
-              name="Financial Reports"
-              sequence="9"
-              groups="account.group_account_user,account.group_account_manager"
-              parent="account.menu_finance_configuration"/>
 
     <menuitem id="menu_account_reports"
               name="Financial Reports"

@@ -1,7 +1,7 @@
 from werkzeug.exceptions import NotFound
 
 from odoo.http import Controller, request, route
-from odoo.http import content_disposition
+from odoo.http.stream import content_disposition
 
 XLSX_CONTENT_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 

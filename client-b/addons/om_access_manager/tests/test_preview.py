@@ -1,11 +1,11 @@
 # Preview as a user: the screens of another user, read only, in the
 # administrator's own session.
-import json
 import time
 
 from odoo.exceptions import UserError
-from odoo.http import root
+from odoo.http.session import session_store
 from odoo.tests import HttpCase, new_test_user, tagged
+from odoo.tools import mute_logger
 
 from .audit import lines_after_transaction
 
@@ -52,17 +52,17 @@ class TestPreview(HttpCase):
 
     def _error(self, model, method, args, kwargs=None, route='call_kw'):
         """ The message of the error a call answers with. """
-        response = self.url_open(f'/web/dataset/{route}/{model}/{method}', data=json.dumps({
+        response = self.url_open(f'/web/dataset/{route}/{model}/{method}', json={
             'jsonrpc': '2.0', 'method': 'call', 'id': 1,
             'params': {'model': model, 'method': method, 'args': args, 'kwargs': kwargs or {}},
-        }), headers={'Content-Type': 'application/json'})
+        })
         return response.json()['error']['data']['message']
 
     def _start(self, user=None):
         return self._call('res.users', 'action_om_preview', [(user or self.user).ids], route='call_button')
 
     def _menu_ids(self):
-        return {int(key) for key in self.url_open('/web/webclient/load_menus/om').json() if key.isdigit()}
+        return {int(key) for key in self.url_open('/web/webclient/load_menus').json() if key.isdigit()}
 
     def test_who_may_preview(self):
         self.assertTrue(self.user._om_preview_refusal(self.user))
@@ -96,6 +96,7 @@ class TestPreview(HttpCase):
         self.assertEqual(self.make_jsonrpc_request('/web/session/get_session_info')['uid'], self.manager.id)
         self.assertIn(self.discuss.id, self._menu_ids())
 
+    @mute_logger('odoo.http')
     def test_nothing_is_saved(self):
         self._start()
         self.assertIn('preview', self._error('res.partner', 'web_save', [self.mine.ids, {'name': 'Changed'}],
@@ -104,6 +105,7 @@ class TestPreview(HttpCase):
         self.assertIn('preview', self._error('res.partner', 'create', [{'name': 'Created in a preview'}]))
         self.assertFalse(self.env['res.partner'].search([('name', '=', 'Created in a preview')]))
 
+    @mute_logger('odoo.http')
     def test_buttons_say_what_the_user_may_do(self):
         self._start()
         # blocked for the user: the profile's refusal
@@ -114,6 +116,7 @@ class TestPreview(HttpCase):
                       self._error('res.partner', 'action_unarchive', [self.mine.ids], route='call_button'))
         self.assertTrue(self.mine.active)
 
+    @mute_logger('odoo.http')
     def test_server_actions_run_read_only(self):
         """ Menus open server actions that pick a view: they run in a preview,
         and what one would save is refused. """
@@ -129,9 +132,8 @@ class TestPreview(HttpCase):
         self._start()
         result = self.make_jsonrpc_request('/web/action/run', {'action_id': opens.id})
         self.assertEqual(result['res_model'], 'res.partner')
-        response = self.url_open('/web/action/run', data=json.dumps({
-            'jsonrpc': '2.0', 'method': 'call', 'id': 1, 'params': {'action_id': saves.id}}),
-            headers={'Content-Type': 'application/json'})
+        response = self.url_open('/web/action/run', json={
+            'jsonrpc': '2.0', 'method': 'call', 'id': 1, 'params': {'action_id': saves.id}})
         self.assertIn('preview', response.json()['error']['data']['message'])
         self.assertFalse(self.env['res.partner'].search([('name', '=', 'Saved in a preview')]))
 
@@ -148,10 +150,10 @@ class TestPreview(HttpCase):
 
     def test_an_expired_preview_ends(self):
         self._start()
-        session = self.session.sid
+        session = self.opener.cookies.get('session_id')
         self.assertTrue(session)
         self.assertEqual(self.make_jsonrpc_request('/web/session/get_session_info')['uid'], self.user.id)
-        store = root.session_store
+        store = session_store()
         stored = store.get(session)
         stored['om_access_preview'] = dict(stored['om_access_preview'], until=time.time() - 1)
         store.save(stored)
@@ -195,12 +197,12 @@ class TestTickToGrant(HttpCase):
         cls.manager = new_test_user(
             cls.env, 'om_tick_manager',
             groups='base.group_user,base.group_system,om_access_manager.group_access_manager')
-        privilege = cls.env['ir.module.category'].create({'name': 'OM Tick App'})
-        cls.app_user = cls.env['res.groups'].create({'name': 'User', 'category_id': privilege.id})
+        privilege = cls.env['res.groups.privilege'].create({'name': 'OM Tick App'})
+        cls.app_user = cls.env['res.groups'].create({'name': 'User', 'privilege_id': privilege.id})
         cls.app_manager = cls.env['res.groups'].create({
-            'name': 'Manager', 'category_id': privilege.id, 'implied_ids': [(4, cls.app_user.id)]})
+            'name': 'Manager', 'privilege_id': privilege.id, 'implied_ids': [(4, cls.app_user.id)]})
         cls.root = cls.env['ir.ui.menu'].create({
-            'name': 'OM Tick App', 'groups_id': [(6, 0, (cls.app_user | cls.app_manager).ids)]})
+            'name': 'OM Tick App', 'group_ids': [(6, 0, (cls.app_user | cls.app_manager).ids)]})
         cls.env['ir.ui.menu'].create({
             'name': 'OM Tick Records', 'parent_id': cls.root.id,
             'action': f'ir.actions.act_window,{cls.env.ref("base.action_partner_form").id}'})
@@ -216,7 +218,7 @@ class TestTickToGrant(HttpCase):
         self.assertEqual(set(access['group_ids']), {self.app_user.id, self.app_manager.id})
         # a user who already has the app
         holder = new_test_user(self.env, 'om_tick_holder', groups='base.group_user')
-        holder.groups_id |= self.app_user
+        holder.group_ids |= self.app_user
         self.assertTrue(Profile.browse(self.profile.id).om_app_access(holder.ids)[self.root.id]['open'])
         # nobody yet: nothing to tell
         self.assertTrue(Profile.om_app_access([])[self.root.id]['open'])
@@ -225,7 +227,7 @@ class TestTickToGrant(HttpCase):
         self.start_tour(f'/odoo/action-om_access_manager.om_access_profile_action/{self.profile.id}',
                         'om_access_manager_tick_grant', login=self.manager.login, timeout=120)
         self.assertEqual(self.profile.granted_group_ids, self.app_user)
-        self.assertIn(self.app_user, self.user.groups_id)
+        self.assertIn(self.app_user, self.user.all_group_ids)
 
     def test_unticking_an_app_takes_it_back(self):
         self.profile.granted_group_ids = self.app_user
@@ -233,4 +235,4 @@ class TestTickToGrant(HttpCase):
                         'om_access_manager_untick_grant', login=self.manager.login, timeout=120)
         self.assertFalse(self.profile.granted_group_ids)
         self.assertIn(self.root, self.profile.hidden_menu_ids)
-        self.assertNotIn(self.app_user, self.user.groups_id)
+        self.assertNotIn(self.app_user, self.user.all_group_ids)

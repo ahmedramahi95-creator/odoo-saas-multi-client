@@ -152,17 +152,7 @@ class OmUserAuditLog(models.Model):
                 lines.clear()
                 if pending:
                     self._om_write_separately(registry, pending)
-            if module.current_test:
-                # Odoo 19's test cursor drops the post-commit hooks: write
-                # just before the commit instead, on the same cursor
-                def flush_now():
-                    pending = lines[:]
-                    lines.clear()
-                    if pending:
-                        self.sudo().with_context(om_user_audit_off=True).create(pending)
-                cr.precommit.add(flush_now)
-            else:
-                cr.postcommit.add(flush)
+            cr.postcommit.add(flush)
             cr.postrollback.add(flush)
         lines.extend(vals_list)
 
@@ -197,7 +187,6 @@ class OmUserAuditLog(models.Model):
             if not lines:
                 return
             self.env.cr.execute("DELETE FROM om_user_audit_log WHERE id IN %s", [tuple(lines.ids)])
-            self.invalidate_model()
             if self.env.context.get('ir_cron_progress_id'):
                 self.env['ir.cron']._commit_progress(len(lines))
             if len(lines) < batch:

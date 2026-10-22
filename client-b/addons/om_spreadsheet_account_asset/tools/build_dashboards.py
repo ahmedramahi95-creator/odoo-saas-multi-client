@@ -29,15 +29,14 @@ def build_assets():
     period = workbook.date_filter('period', 'Period', 'this_year')
     category = workbook.relation_filter('category', 'Asset Category', 'account.asset.category',
                                         domain=[['type', '=', 'purchase']])
-    # the running assets: 19.0 has no paused assets, nor a depreciation imported with the asset
-    running = [['state', '=', 'open'], ['category_id.type', '=', 'purchase']]
+    running = [['state', 'in', ['open', 'paused']], ['category_id.type', '=', 'purchase']]
     assets = workbook.pivot('Assets by Category', 'account.asset.asset', running,
-                            ['value', '__count'], rows=['category_id'],
+                            ['value', 'opening_depreciation', '__count'], rows=['category_id'],
                             field_matching={category: ('category_id', 'many2one')},
                             sorted_column=('value', 'desc'))
     posted = workbook.pivot(
         'Posted Depreciation', 'asset.asset.report',
-        [['move_check', '=', True], ['state', '=', 'open'],
+        [['move_check', '=', True], ['state', 'in', ['open', 'paused']],
          ['asset_category_id.type', '=', 'purchase']],
         ['posted_value'], field_matching={category: ('asset_category_id', 'many2one')})
     board = workbook.pivot(
@@ -47,9 +46,10 @@ def build_assets():
 
     figures = [
         ('gross', 'Gross value of the running assets', '=PIVOT.VALUE(%s,"value")' % assets, None),
+        ('opening', 'Opening depreciation', '=PIVOT.VALUE(%s,"opening_depreciation")' % assets, None),
         ('posted', 'Depreciation posted', '=PIVOT.VALUE(%s,"posted_value")' % posted, None),
-        ('accumulated', 'Accumulated depreciation', '=B2', None),
-        ('book', 'Book value', '=B1-B3', None),
+        ('accumulated', 'Accumulated depreciation', '=B2+B3', None),
+        ('book', 'Book value', '=B1-B4', None),
         ('count', 'Running assets', '=PIVOT.VALUE(%s,"__count")' % assets, INTEGER_FORMAT),
         ('period_posted', 'Depreciation posted in the period', '=PIVOT.VALUE(%s,"posted_value")' % board, None),
         ('period_planned', 'Depreciation to post in the period', '=PIVOT.VALUE(%s,"unposted_value")' % board,
@@ -83,7 +83,7 @@ def build_assets():
     figures = cards(dashboard, items, width, per_row=3)
     for key in ('gross', 'book', 'count'):
         workbook.link_menu(figures[key], 'om_account_asset.menu_action_account_asset_asset_form')
-    workbook.link_menu(figures['period_planned'], 'om_account_asset.menu_action_asset_asset_report')
+    workbook.link_menu(figures['period_planned'], 'om_account_asset.menu_asset_depreciation_schedule')
     dashboard.chart(
         'monthly', 'bar', 'Depreciation by Month', data.range(3, 1, 3, 12),
         [(data.range(4, 1, 4, 12), 'Posted', None), (data.range(5, 1, 5, 12), 'To Post', None)],

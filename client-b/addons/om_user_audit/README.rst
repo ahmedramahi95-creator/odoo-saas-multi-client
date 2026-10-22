@@ -21,7 +21,7 @@ Features
   new value of each field that changed (``Phone: 111 → 222``). Only what really
   changed is written.
 * **Reads**: one line per call of the web client or of a script (XML-RPC,
-  JSON-RPC), with the number of records and their first ids. Odoo's own
+  JSON-RPC, JSON-2), with the number of records and their first ids. Odoo's own
   code reading data is never logged.
 * **Exports, imports and prints**: the fields exported and the number of
   records, the rows imported, the report printed and on which record.

@@ -1,8 +1,8 @@
 ==================
-Odoo 18 Accounting
+Odoo 20 Accounting
 ==================
 
-This Module will adds following accounting features to Odoo 18 community edition:
+This Module will adds following accounting features to Odoo 20 community edition:
 Financial Reports, Asset Management, Budget Management, Bank Reconciliation,
 Daily Reports, Customer Follow Ups and Recurring Payments
 

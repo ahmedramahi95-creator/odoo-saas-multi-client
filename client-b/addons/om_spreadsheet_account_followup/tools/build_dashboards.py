@@ -90,7 +90,7 @@ def build_followups_forecast():
     dashboard.set(0, top, label('Cash Forecast Items'), HEADER)
     for col in range(1, 7):
         dashboard.set(col, top, None, HEADER)
-    workbook.list_table(dashboard, 0, top + 1, items, 15, HEADER)
+    dashboard.set(0, top + 1, '=ODOO.LIST(%s,15)' % items)
     dashboard.set(0, top + 18, label('Balance by Follow-up Level'), HEADER)
     dashboard.set(1, top + 18, None, HEADER)
     dashboard.set(0, top + 19, '=PIVOT(%s,20,TRUE,FALSE)' % levels)

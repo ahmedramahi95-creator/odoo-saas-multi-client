@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 18 Automatic Currency Rates',
+    'name': 'Odoo 20 Automatic Currency Rates',
     'version': '1.0.0',
     'category': 'Accounting',
     'summary': 'Update the exchange rates automatically from the European Central Bank, Frankfurter, '

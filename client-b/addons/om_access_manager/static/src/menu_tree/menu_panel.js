@@ -1,4 +1,4 @@
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, proxy, t, useProps } from "@odoo/owl";
 import { CheckBox } from "@web/core/checkbox/checkbox";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
@@ -42,16 +42,16 @@ const ELEMENT_SECTIONS = [
 export class MenuPanel extends Component {
     static template = "om_access_manager.MenuPanel";
     static components = { CheckBox };
-    static props = {
-        panel: Object,
-        readonly: { type: Boolean, optional: true },
-        apply: Function,
-        openRule: Function,
-    };
+    props = useProps({
+        panel: t.object(),
+        readonly: t.boolean().optional(),
+        apply: t.function(),
+        openRule: t.function(),
+    });
 
     setup() {
         this.orm = useService("orm");
-        this.state = useState({ open: { rights: true }, fieldSearch: "", choices: {} });
+        this.state = proxy({ open: { rights: true }, fieldSearch: "", choices: {} });
         this.RIGHTS = RIGHTS;
         this.FIELD_MODES = FIELD_MODES;
         this.BUTTON_MODES = BUTTON_MODES;

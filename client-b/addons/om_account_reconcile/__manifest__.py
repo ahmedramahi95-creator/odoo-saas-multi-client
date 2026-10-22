@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 18 Reconciliation',
+    'name': 'Odoo 20 Reconciliation',
     'version': '1.0.3',
     'category': 'Accounting',
     'summary': 'Bank Reconciliation, Match Journal Items, Reconciliation Models, Auto Reconciliation',
@@ -11,7 +11,7 @@
     'support': 'odoomates@gmail.com',
     'depends': ['account'],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'data/ir_cron.xml',
         'views/res_config_settings_views.xml',
         'views/account_bank_statement_views.xml',

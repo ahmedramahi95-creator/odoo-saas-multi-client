@@ -19,19 +19,19 @@ class TestAccessProfile(TransactionCase):
         # base installed: grant all four so assertions do not pass by accident.
         cls.category_model = cls.env['ir.model']._get('res.partner.category')
         cls.test_group = cls.env['res.groups'].create({'name': 'OM Access Test Group'})
-        cls.env['ir.model.access'].create([
+        cls.env['ir.access'].create([
             {
                 'name': 'om_access_manager test: partners',
                 'model_id': cls.partner_model.id,
                 'group_id': cls.test_group.id,
-                'perm_read': True, 'perm_write': True, 'perm_create': True, 'perm_unlink': True,
+                'operation': 'crud',
             },
             {
                 # a second model, to check that a rule stays on its own model
                 'name': 'om_access_manager test: partner categories',
                 'model_id': cls.category_model.id,
                 'group_id': cls.test_group.id,
-                'perm_read': True, 'perm_write': True, 'perm_create': True, 'perm_unlink': True,
+                'operation': 'crud',
             },
         ])
         cls.password = 'om-access-manager-test-pw'
@@ -39,7 +39,7 @@ class TestAccessProfile(TransactionCase):
             'name': 'Profiled User',
             'login': 'om_access_profiled',
             'password': cls.password,
-            'groups_id': [(6, 0, [cls.env.ref('base.group_user').id, cls.test_group.id])],
+            'group_ids': [(6, 0, [cls.env.ref('base.group_user').id, cls.test_group.id])],
         })
         cls.Profile = cls.env['om.access.profile']
 
@@ -57,14 +57,14 @@ class TestAccessProfile(TransactionCase):
     def test_profile_creates_and_syncs_its_group(self):
         profile = self._profile()
         self.assertTrue(profile.group_id, "the technical group is created with the profile")
-        self.assertIn(self.user, profile.group_id.users)
+        self.assertIn(self.user, profile.group_id.user_ids)
 
         other = self.env['res.users'].create({
             'name': 'Other', 'login': 'om_access_other',
-            'groups_id': [(6, 0, [self.env.ref('base.group_user').id])],
+            'group_ids': [(6, 0, [self.env.ref('base.group_user').id])],
         })
         profile.user_ids = [(4, other.id)]
-        self.assertIn(other, profile.group_id.users)
+        self.assertIn(other, profile.group_id.user_ids)
 
         group = profile.group_id
         profile.unlink()
@@ -86,7 +86,7 @@ class TestAccessProfile(TransactionCase):
                 "%s must never be restricted" % xmlid)
 
     def test_settings_users_are_exempt_unless_asked(self):
-        self.user.groups_id = [(4, self.env.ref('base.group_system').id)]
+        self.user.group_ids = [(4, self.env.ref('base.group_system').id)]
         profile = self._profile(global_readonly=True)
         self.assertFalse(self._rules().enabled)
         profile.apply_to_admin = True
@@ -357,7 +357,21 @@ class TestAccessProfile(TransactionCase):
         other = self.env['res.partner'].create({'name': 'C', 'ref': 'keep'})
         self.assertFalse(other.with_user(self.user).has_access('unlink'))
         self.assertTrue(other.with_user(self.user).has_access('read'))
-        self.assertFalse(partners.search([('ref', '!=', 'keep')]))
+        # outside the filter, only the contact of the user: a user always reads their own
+        self.assertEqual(partners.search([('ref', '!=', 'keep')]), self.user.partner_id)
+
+    def test_a_user_always_reads_their_own_user_and_contact(self):
+        allowed = self.env['res.partner'].create({'name': 'Allowed'})
+        stranger = self.env['res.partner'].create({'name': 'Stranger'})
+        self._profile(model_ids=[(0, 0, {
+            'model_id': self.partner_model.id,
+            'domain': repr([('id', '=', allowed.id)]),
+        })])
+        self.assertTrue(self.user.partner_id.with_user(self.user).has_access('read'))
+        self.assertTrue(self.user.with_user(self.user).has_access('read'))
+        self.user.with_user(self.user).read(['name', 'partner_id'])
+        self.assertFalse(stranger.with_user(self.user).has_access('read'))
+        self.assertEqual(self._partner().search([]), allowed | self.user.partner_id)
 
     def test_block_import(self):
         self._profile(block_import=True)
@@ -510,7 +524,7 @@ class TestAccessProfile(TransactionCase):
 
     def test_block_login_spares_the_last_administrator(self):
         # drop the exemption of the built-in administrator to reach this case
-        admins = self.env.ref('base.group_system').users
+        admins = self.env.ref('base.group_system').all_user_ids
         Profile = type(self.env['om.access.profile'])
         with patch.object(Profile, '_exempt_user_ids', lambda self: ()):
             with self.assertRaises(ValidationError):
@@ -520,7 +534,7 @@ class TestAccessProfile(TransactionCase):
                           user_ids=[(6, 0, (admins - admins[:1]).ids)])
 
     def test_block_export(self):
-        self.user.groups_id = [(4, self.env.ref('base.group_allow_export').id)]
+        self.user.group_ids = [(4, self.env.ref('base.group_allow_export').id)]
         self._profile(block_export=True)
         self.assertFalse(self.user.with_user(self.user).has_group('base.group_allow_export'))
         with self.assertRaises(UserError):

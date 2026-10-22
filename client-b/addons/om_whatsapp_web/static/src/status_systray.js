@@ -1,4 +1,4 @@
-import { Component, useState } from "@odoo/owl";
+import { Component } from "@odoo/owl";
 import { Dropdown } from "@web/core/dropdown/dropdown";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
@@ -9,12 +9,11 @@ import { whatsappStatus } from "./status_service";
 export class WhatsappWebStatusSystray extends Component {
     static template = "om_whatsapp_web.StatusSystray";
     static components = { Dropdown };
-    static props = {};
 
     setup() {
         this.statusService = useService("om_whatsapp_web_status");
         this.action = useService("action");
-        this.status = useState(whatsappStatus);
+        this.status = whatsappStatus;
     }
 
     get title() {

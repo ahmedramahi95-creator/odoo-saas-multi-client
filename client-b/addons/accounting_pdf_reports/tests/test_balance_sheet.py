@@ -1,25 +1,11 @@
 from odoo.tests import tagged
+from odoo.exceptions import ValidationError
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 
 @tagged('post_install', '-at_install')
 class TestBalanceSheet(AccountTestInvoicingCommon):
-    """ What the Balance Sheet of this module reports.
-
-    The tree of 19.0 is:
-
-        Balance Sheet
-        |-- Assets
-        `-- Liability                     (a sum)
-            |-- Liability                 (payable, credit card, equity, liabilities, unaffected)
-            `-- Profit (Loss) to report
-
-    so the equity is counted among the liabilities and two nodes carry the same name.
-    Both are deliberate here: separating them changes a record the customer may have
-    adapted, and that is a migration rather than a fix. The tests below say what the
-    report does today, whichever way that question is answered later.
-    """
 
     def _balance_sheet(self, date_to):
         report = self.env.ref('accounting_pdf_reports.account_financial_report_balancesheet0')
@@ -29,30 +15,20 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
         )._compute_report_balance(report.children_ids)
         return {line.name: balances[line.id]['balance'] for line in report.children_ids}
 
-    def _lines(self, date_to=False):
-        """ :return: the report lines as they are printed, the sign of each one applied """
+    def _printed(self, date_to):
+        """ :return: {name: amount} as the report prints them, the sign of each line applied """
         report = self.env.ref('accounting_pdf_reports.account_financial_report_balancesheet0')
-        return self.env['report.accounting_pdf_reports.report_financial'].get_account_lines({
+        lines = self.env['report.accounting_pdf_reports.report_financial'].with_context(
+            date_from=False, date_to=date_to, state='posted', strict_range=False,
+            company_id=self.env.company.id,
+        ).get_account_lines({
             'account_report_id': (report.id, report.name),
             'used_context': {'date_from': False, 'date_to': date_to, 'state': 'posted',
                              'strict_range': False, 'company_id': self.env.company.id},
             'enable_filter': False,
             'debit_credit': False,
         })
-
-    def _entry(self, date, debit_account, credit_account, amount):
-        return self.env['account.move'].create({
-            'journal_id': self.company_data['default_journal_misc'].id,
-            'date': date,
-            'line_ids': [
-                (0, 0, {'name': 'entry', 'balance': amount, 'account_id': debit_account.id}),
-                (0, 0, {'name': 'entry', 'balance': -amount, 'account_id': credit_account.id}),
-            ],
-        }).action_post()
-
-    # -------------------------------------------------------------------------
-    # It balances
-    # -------------------------------------------------------------------------
+        return {line['name']: line['balance'] for line in lines if line.get('type') == 'report'}
 
     def test_balance_sheet_balances_with_current_year_earnings_postings(self):
         self.init_invoice('out_invoice', amounts=[1000.0], invoice_date='2025-06-01', taxes=[], post=True)
@@ -60,8 +36,15 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
             'code': 'RETEARN', 'name': 'Retained Earnings', 'account_type': 'equity',
         })
         # e.g. the transfer of the earnings of 2025, or an opening balance difference
-        self._entry('2026-01-01', self.env.company.get_unaffected_earnings_account(),
-                    retained_earnings, 1000.0)
+        self.env['account.move'].create({
+            'journal_id': self.company_data['default_journal_misc'].id,
+            'date': '2026-01-01',
+            'line_ids': [
+                (0, 0, {'name': 'transfer', 'balance': 1000.0,
+                        'account_id': self.env.company.get_unaffected_earnings_account().id}),
+                (0, 0, {'name': 'transfer', 'balance': -1000.0, 'account_id': retained_earnings.id}),
+            ],
+        }).action_post()
 
         for date_to in ('2025-12-31', '2026-12-31'):
             with self.subTest(date_to=date_to):
@@ -69,111 +52,106 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
                 self.assertAlmostEqual(sum(lines.values()), 0.0)
                 self.assertAlmostEqual(lines['Assets'], 1000.0)
 
+    def test_prepayments_are_assets(self):
+        prepayments = self.env['account.account'].create({
+            'code': 'PREPAID', 'name': 'Prepaid Rent', 'account_type': 'asset_prepayments',
+        })
+        self.env['account.move'].create({
+            'journal_id': self.company_data['default_journal_misc'].id,
+            'date': '2025-06-01',
+            'line_ids': [
+                (0, 0, {'name': 'rent', 'balance': 600.0, 'account_id': prepayments.id}),
+                (0, 0, {'name': 'rent', 'balance': -600.0,
+                        'account_id': self.company_data['default_account_payable'].id}),
+            ],
+        }).action_post()
+        lines = self._balance_sheet('2025-12-31')
+        self.assertAlmostEqual(lines['Assets'], 600.0)
+        self.assertAlmostEqual(sum(lines.values()), 0.0)
+
+    def test_the_sections_are_named_apart(self):
+        """ Up to 1.x a Liability sat inside a Liability, and the equity was counted among the liabilities. """
+        names = [line.name for line in self.env.ref(
+            'accounting_pdf_reports.account_financial_report_balancesheet0').children_ids]
+        self.assertEqual(names, ['Assets', 'Liabilities and Equity'])
+        sections = [line.name for line in self.env.ref(
+            'accounting_pdf_reports.account_financial_report_liabilitysum0').children_ids]
+        self.assertEqual(sections, ['Liabilities', 'Equity'])
+        equity = [line.name for line in self.env.ref(
+            'accounting_pdf_reports.account_financial_report_equity0').children_ids]
+        self.assertEqual(equity, ['Capital and Reserves', 'Profit (Loss) to report'],
+                         'the profit of the period belongs to the owners')
+
+    def test_the_equity_is_not_among_the_liabilities(self):
+        equity_types = self.env.ref('accounting_pdf_reports.account_financial_report_equity_accounts0')\
+            .account_type_ids.mapped('type')
+        liability_types = self.env.ref('accounting_pdf_reports.account_financial_report_liability0')\
+            .account_type_ids.mapped('type')
+        self.assertEqual(set(equity_types), {'equity', 'equity_unaffected'})
+        self.assertFalse(set(equity_types) & set(liability_types), 'nothing is counted on both sides')
+        self.assertIn('liability_credit_card', liability_types,
+                      'a credit card is money owed: without it the balance sheet does not balance')
+
+    def test_what_is_owed_prints_positive(self):
+        """ A balance sheet is read with the liabilities and the equity positive, facing the assets. """
+        self.init_invoice('out_invoice', amounts=[1000.0], invoice_date='2025-06-01', taxes=[], post=True)
+        printed = self._printed('2025-12-31')
+        self.assertGreater(printed['Assets'], 0.0)
+        self.assertGreater(printed['Liabilities and Equity'], 0.0,
+                           'what the company owes and what belongs to its owners, printed positive')
+        self.assertAlmostEqual(printed['Assets'], printed['Liabilities and Equity'],
+                               msg='the two sides of the balance sheet face each other')
+        self.assertAlmostEqual(printed['Equity'], 1000.0, msg='the profit of the period is in the equity')
+        self.assertAlmostEqual(printed['Profit (Loss) to report'], 1000.0)
+        self.assertAlmostEqual(printed['Capital and Reserves'], 0.0)
+
     def test_a_credit_card_balances(self):
-        """ A credit card is money owed: without it on the other side the report does not balance. """
+        """ The credit card accounts belong to the liabilities: the report balances with one in use. """
         credit_card = self.env['account.account'].create({
             'code': 'CCARD', 'name': 'Company Card', 'account_type': 'liability_credit_card',
         })
         expense = self.env['account.account'].create({
             'code': 'CCEXP', 'name': 'Card Expense', 'account_type': 'expense',
         })
-        self._entry('2025-06-01', expense, credit_card, 250.0)
-
-        self.assertAlmostEqual(sum(self._balance_sheet('2025-12-31').values()), 0.0)
-
-    def test_prepayments_are_assets(self):
-        prepayments = self.env['account.account'].create({
-            'code': 'PREPAID', 'name': 'Prepaid Rent', 'account_type': 'asset_prepayments',
-        })
-        self._entry('2025-06-01', prepayments, self.company_data['default_account_payable'], 600.0)
-
+        self.env['account.move'].create({
+            'journal_id': self.company_data['default_journal_misc'].id,
+            'date': '2025-06-01',
+            'line_ids': [
+                (0, 0, {'name': 'card', 'balance': 250.0, 'account_id': expense.id}),
+                (0, 0, {'name': 'card', 'balance': -250.0, 'account_id': credit_card.id}),
+            ],
+        }).action_post()
         lines = self._balance_sheet('2025-12-31')
-        self.assertAlmostEqual(lines['Assets'], 600.0)
         self.assertAlmostEqual(sum(lines.values()), 0.0)
 
-    # -------------------------------------------------------------------------
-    # How it reads
-    # -------------------------------------------------------------------------
-
-    def test_the_two_sides_cancel_each_other(self):
-        """ 19.0 prints the liability side negative and the assets positive, so the two add
-        up to nothing rather than facing each other as two positive columns.
-
-        20.0 prints both sides positive. Changing the sign here changes a report people read
-        every day, so it is recorded rather than corrected.
-        """
-        self.init_invoice('out_invoice', amounts=[1000.0], invoice_date='2025-06-01', taxes=[], post=True)
-
-        printed = [(line['name'], line['level'], line['balance'])
-                   for line in self._lines('2025-12-31') if line['type'] == 'report']
-        sides = {name: balance for name, level, balance in printed if level == 1}
-
-        self.assertAlmostEqual(sides['Assets'], 1000.0)
-        self.assertAlmostEqual(sides['Liability'], -1000.0)
-        self.assertAlmostEqual(sides['Assets'] + sides['Liability'], 0.0)
-        self.assertAlmostEqual(dict(((n, l), b) for n, l, b in printed)[('Profit (Loss) to report', 2)],
-                               -1000.0, msg='the profit of the period sits on the side of the owners')
-
     def test_the_lines_carry_their_level(self):
-        """ The sections are indented by their depth in the report.
-
-        The order they come in is deliberately not asserted: only one record of the tree of
-        19.0 carries a sequence, so the sections come back in whatever order the database
-        returns them and Assets and Liability change places between runs. That is recorded
-        as a defect rather than tested for.
-        """
-        levels = sorted((line['name'], line['level'])
-                        for line in self._lines() if line['type'] == 'report')
-
-        self.assertEqual(levels, sorted([
-            ('Balance Sheet', 0),
-            ('Assets', 1),
-            ('Liability', 1),
-            ('Liability', 2),
-            ('Profit (Loss) to report', 2),
-        ]))
-
-        self.env.ref('accounting_pdf_reports.account_financial_report_liability0').style_overwrite = '1'
-        promoted = [line['level'] for line in self._lines()
-                    if line['name'] == 'Liability' and line['type'] == 'report']
-        self.assertEqual(promoted, [1, 1], 'a style chosen on the line wins over its depth')
-
-    def test_the_sections_come_back_in_no_particular_order(self):
-        """ 19.0 sets a sequence on one record of the tree, so the Balance Sheet can print
-        Assets above Liability on one run and below it on the next. 20.0 numbers every node.
-
-        Numbering them here would change a record the customer may have adapted, so the
-        defect is recorded and left for the decision it deserves.
-        """
-        root = self.env.ref('accounting_pdf_reports.account_financial_report_balancesheet0')
-
-        self.assertTrue(all(child.sequence == 0 for child in root.children_ids),
-                        'nothing orders the two sides of the balance sheet')
-
-    # -------------------------------------------------------------------------
-    # What the tree of 19.0 counts, and where
-    # -------------------------------------------------------------------------
-
-    def test_nothing_is_counted_on_both_sides(self):
-        """ An account type on both sides would be added twice and the report would still
-        balance, which is why it is worth a test of its own. """
-        assets = self.env.ref('accounting_pdf_reports.account_financial_report_assets0')
-        liabilities = self.env.ref('accounting_pdf_reports.account_financial_report_liability0')
-
-        overlap = set(assets.account_type_ids.mapped('type')) & set(liabilities.account_type_ids.mapped('type'))
-
-        self.assertFalse(overlap, 'an account type belongs to one side of the balance sheet')
-
-    def test_the_equity_is_reported_with_the_liabilities(self):
-        """ 19.0 keeps the equity inside the Liability node. This test records that, so that
-        the day it is separated the change is a decision and not a surprise. """
-        liabilities = self.env.ref('accounting_pdf_reports.account_financial_report_liability0')
-
-        types = set(liabilities.account_type_ids.mapped('type'))
-
-        self.assertIn('equity', types)
-        self.assertIn('equity_unaffected', types)
-        self.assertIn('liability_credit_card', types)
+        """ The sections are indented by their depth in the report, the title of the report is not printed. """
+        report = self.env.ref('accounting_pdf_reports.account_financial_report_balancesheet0')
+        lines = self.env['report.accounting_pdf_reports.report_financial'].get_account_lines({
+            'account_report_id': (report.id, report.name),
+            'used_context': {'state': 'posted', 'company_id': self.env.company.id},
+            'enable_filter': False,
+            'debit_credit': False,
+        })
+        levels = {line['name']: line['level'] for line in lines if line['type'] == 'report'}
+        self.assertEqual(levels, {
+            'Balance Sheet': 0,
+            'Assets': 1,
+            'Liabilities and Equity': 1,
+            'Liabilities': 2,
+            'Equity': 2,
+            'Capital and Reserves': 3,
+            'Profit (Loss) to report': 3,
+        })
+        self.env.ref('accounting_pdf_reports.account_financial_report_equity0').style_overwrite = '1'
+        lines = self.env['report.accounting_pdf_reports.report_financial'].get_account_lines({
+            'account_report_id': (report.id, report.name),
+            'used_context': {'state': 'posted', 'company_id': self.env.company.id},
+            'enable_filter': False,
+            'debit_credit': False,
+        })
+        self.assertEqual(next(line['level'] for line in lines if line['name'] == 'Equity'), 1,
+                         'a style chosen on the line wins over its depth')
 
     def test_the_sections_keep_their_order(self):
         """ The sections without a sequence print in the order they were created (Assets before the
@@ -188,3 +166,22 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
             printed = report._get_children_by_order().filtered(lambda line: line.parent_id == report)
             # the ids, in order: two recordsets compare equal whatever their order
             self.assertEqual(printed.ids, sections.ids, xmlid)
+
+    def test_a_section_cannot_depend_on_itself(self):
+        """ A loop in the sections would make the report recurse forever """
+        balance_sheet = self.env.ref('accounting_pdf_reports.account_financial_report_balancesheet0')
+        assets = self.env.ref('accounting_pdf_reports.account_financial_report_assets0')
+        with self.assertRaises(ValidationError):
+            balance_sheet.parent_id = assets
+        with self.assertRaises(ValidationError):
+            assets.write({'type': 'account_report', 'account_report_id': balance_sheet.id})
+        value = self.env['account.financial.report'].create({
+            'name': 'Value', 'type': 'account_report', 'account_report_id': assets.id})
+        with self.assertRaises(ValidationError):
+            value.account_report_id = value
+        # a View that sums a Report Value of itself
+        view = self.env['account.financial.report'].create({'name': 'View', 'type': 'sum'})
+        with self.assertRaises(ValidationError):
+            value.write({'parent_id': view.id, 'account_report_id': view.id})
+        # what the standard reports do stays allowed
+        value.write({'parent_id': view.id, 'account_report_id': balance_sheet.id})

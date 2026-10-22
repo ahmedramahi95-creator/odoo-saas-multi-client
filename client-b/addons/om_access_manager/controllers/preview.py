@@ -5,7 +5,7 @@ from odoo.http import request
 
 class AccessPreview(http.Controller):
 
-    @http.route('/om_access_manager/preview/stop', type='json', auth='user')
+    @http.route('/om_access_manager/preview/stop', type='jsonrpc', auth='user')
     def stop(self):
         data = request.env['res.users']._om_preview_stop()
         if data and data.get('cids'):

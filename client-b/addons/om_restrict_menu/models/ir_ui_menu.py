@@ -68,7 +68,7 @@ class IrUiMenu(models.Model):
         def keep(menu_id):
             menu = menus[menu_id]
             children = [child for child in menu['children'] if child not in hidden and keep(child)]
-            if menu['id'] and not children and not menu['action']:
+            if menu['id'] and not children and not menu['action_id']:
                 return False
             pruned[menu_id] = menu if children == menu['children'] else dict(menu, children=children)
             return True

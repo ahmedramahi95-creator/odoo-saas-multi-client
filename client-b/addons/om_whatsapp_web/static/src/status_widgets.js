@@ -1,4 +1,4 @@
-import { Component, useState } from "@odoo/owl";
+import { Component, useProps } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
@@ -6,7 +6,8 @@ import { standardWidgetProps } from "@web/views/widgets/standard_widget_props";
 import { whatsappStatus } from "./status_service";
 
 /** The status of WhatsApp Web in this browser, seen from an account: green only for its own number. */
-function statusFor(status, resId) {
+function statusFor(resId) {
+    const status = whatsappStatus;
     if (status.level === "connected" && status.accountId && resId && status.accountId !== resId) {
         return {
             level: "other",
@@ -25,15 +26,15 @@ function statusFor(status, resId) {
 }
 
 class StatusBase extends Component {
-    static props = { ...standardWidgetProps };
+    props = useProps({ ...standardWidgetProps });
 
     setup() {
         this.statusService = useService("om_whatsapp_web_status");
-        this.status = useState(whatsappStatus);
+        this.status = whatsappStatus;
     }
 
     get view() {
-        return statusFor(this.status, this.props.record?.resId);
+        return statusFor(this.props.record?.resId);
     }
 
     openWhatsapp() {

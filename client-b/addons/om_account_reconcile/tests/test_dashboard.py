@@ -61,7 +61,7 @@ class TestDashboard(AccountTestInvoicingCommon):
         st_line = self.env['account.bank.statement.line'].create({
             'journal_id': self.bank.id, 'date': '2026-01-20', 'amount': 50.0, 'payment_ref': 'Unknown deposit',
         })
-        st_line.move_id.checked = False
+        st_line.move_id.review_state = 'todo'
         self.assertEqual(self._dashboard(self.bank)['number_to_check'], 1)
         action = self.bank.om_action_open_to_review()
         self.assertEqual(action['params']['filter'], 'to_review')

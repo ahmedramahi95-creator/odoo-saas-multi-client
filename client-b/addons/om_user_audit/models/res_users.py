@@ -19,38 +19,32 @@ class ResUsers(models.Model):
     def _compute_om_audit_counts(self):
         Log = self.env['om.user.audit.log'].sudo()
         logs = dict(Log._read_group([('user_id', 'in', self.ids)], ['user_id'], ['__count']))
-        sessions = dict(self.env['res.device'].sudo()._read_group(
+        sessions = dict(self.env['res.session'].sudo()._read_group(
             [('user_id', 'in', self.ids)], ['user_id'], ['__count']))
         for user in self:
             user.om_audit_log_count = logs.get(user, 0)
             user.om_session_count = sessions.get(user, 0)
 
-    @classmethod
-    def _login(cls, db, credential, user_agent_env):
-        # Odoo 18 signs in on a cursor of its own: so is the log written
+    def _login(self, credential, user_agent_env):
+        Log = self.env['om.user.audit.log']
         values = {'ip': client_address() or False}
         if request:
             values['user_agent'] = (request.httprequest.user_agent.string or '')[:500] or False
         interactive = (user_agent_env or {}).get('interactive', True)
         try:
-            auth_info = super()._login(db, credential, user_agent_env)
+            auth_info = super()._login(credential, user_agent_env)
         except AccessDenied as error:
             login = credential.get('login') or ''
-            with cls.pool.cursor() as cr:
-                env = api.Environment(cr, SUPERUSER_ID, {})
-                user = env['res.users'].with_context(active_test=False).search([('login', '=', login)], limit=1)
-                env['om.user.audit.log']._om_log(
-                    'login_failed', separate=True, user_id=user.id or False, login=login[:100],
-                    detail=str(error.args[0]) if error.args and error.args[0] else False, **values)
+            user = self.sudo().with_context(active_test=False).search([('login', '=', login)], limit=1)
+            Log._om_log('login_failed', separate=True, user_id=user.id or False, login=login[:100],
+                        detail=str(error.args[0]) if error.args and error.args[0] else False, **values)
             raise
         uid = auth_info.get('uid')
         if uid and uid != SUPERUSER_ID:
-            with cls.pool.cursor() as cr:
-                env = api.Environment(cr, SUPERUSER_ID, {})
-                env['om.user.audit.log']._om_log('login', user_id=uid, login=credential.get('login'),
-                                                 detail=False if interactive else 'API', **values)
-                if interactive:
-                    env['res.users'].browse(uid)._om_sign_in_mail(values)
+            Log._om_log('login', user_id=uid, login=credential.get('login'),
+                        detail=False if interactive else 'API', **values)
+            if interactive:
+                self.env['res.users'].sudo().browse(uid)._om_sign_in_mail(values)
         return auth_info
 
     def _om_sign_in_mail(self, values):
@@ -72,7 +66,7 @@ class ResUsers(models.Model):
         if target in ('user', 'both') and self.email:
             recipients |= self.partner_id
         if target in ('admins', 'both'):
-            admins = self.env.ref('base.group_system').users.filtered(
+            admins = self.env.ref('base.group_system').all_user_ids.filtered(
                 lambda user: user.email and user != self and user.id != SUPERUSER_ID)
             recipients |= admins.partner_id
         if not recipients:
@@ -105,12 +99,12 @@ class ResUsers(models.Model):
         return action
 
     def action_om_end_sessions(self):
-        self.env['res.device'].sudo().search([('user_id', 'in', self.ids)]).action_om_end()
+        self.env['res.session'].sudo().search([('user_id', 'in', self.ids)]).action_om_end()
         return True
 
 
-class ResDevice(models.Model):
-    _inherit = 'res.device'
+class ResSession(models.Model):
+    _inherit = 'res.session'
 
     om_idle = fields.Boolean(string='Idle', compute='_compute_om_idle')
 
@@ -128,7 +122,7 @@ class ResDevice(models.Model):
         Log = self.env['om.user.audit.log']
         for session in self:
             Log._om_log('session_end', user_id=session.user_id.id, ip=session.ip_address,
-                        detail=f'by {self.env.user.login}')
+                        user_agent=(session.user_agent or '')[:500], detail=f'by {self.env.user.login}')
         self.sudo()._revoke()
         return True
 

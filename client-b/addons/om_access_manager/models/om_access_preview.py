@@ -45,7 +45,7 @@ class ResUsers(models.Model):
         if self.id in self.env['om.access.profile']._exempt_user_ids():
             return _("The administrator is never restricted: there is nothing to preview.")
         # nobody reads more through a preview than they can already
-        if not viewer._has_group('base.group_system') and not self.groups_id <= viewer.groups_id:
+        if not viewer._has_group('base.group_system') and not self.all_group_ids <= viewer.all_group_ids:
             return _("%s has rights you do not have: only a Settings user can preview them.", self.name)
         return None
 

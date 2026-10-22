@@ -1387,8 +1387,8 @@ msgstr "o"
 #: model:mail.template,subject:om_account_followup.email_template_om_account_followup_level0
 #: model:mail.template,subject:om_account_followup.email_template_om_account_followup_level1
 #: model:mail.template,subject:om_account_followup.email_template_om_account_followup_level2
-msgid "{{ user.env.company.name }} Payment Reminder"
-msgstr "{{ user.env.company.name }} Recordatorio de pago"
+msgid "{{ env.company.name }} Payment Reminder"
+msgstr "{{ env.company.name }} Recordatorio de pago"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form

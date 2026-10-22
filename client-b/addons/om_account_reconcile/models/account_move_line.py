@@ -1,7 +1,5 @@
 from odoo import api, fields, models, Command, _
-from odoo.exceptions import UserError
-
-from .tools import lock_rows
+from odoo.exceptions import LockError, UserError
 
 
 class AccountMoveLine(models.Model):
@@ -58,7 +56,9 @@ class AccountMoveLine(models.Model):
         :param writeoff: dictionary with account_id, journal_id, date, label
         """
         self._om_check_matchable()
-        if not lock_rows(self):
+        try:
+            self.lock_for_update()
+        except LockError:
             raise UserError(
                 _('These journal items are being reconciled by someone else, please try again in a moment.'))
         summary = self._om_matching_summary()

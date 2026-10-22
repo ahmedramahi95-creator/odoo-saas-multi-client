@@ -6,7 +6,8 @@ from freezegun import freeze_time
 import requests
 
 from odoo import Command
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -115,12 +116,13 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         self.assertIn('could not be reached', self.company.rate_last_message)
         self.assertIn('Not quoted by the sources: AED, INR', self.company.rate_last_message)
 
+    @mute_logger('odoo.addons.om_currency_rate_update.models.res_company')
     def test_refused_key_and_failure_notification(self):
         self.company.write({'rate_provider': 'openexchangerates', 'rate_openexchangerates_key': 'WRONG',
                             'rate_interval': 'daily'})
         refused = FakeResponse({'error': True, 'status': 401, 'message': 'invalid_app_id',
                                 'description': 'Invalid App ID provided.'}, status_code=401)
-        self.env.user.groups_id = [Command.link(self.env.ref('account.group_account_manager').id)]
+        self.env.user.group_ids = [Command.link(self.env.ref('account.group_account_manager').id)]
         with patch(GET, fake_get({'openexchangerates': refused})):
             for day in ('2026-09-15', '2026-09-16', '2026-09-17'):
                 with freeze_time(day):
@@ -164,16 +166,3 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         self.company.rate_interval = 'manual'
         with patch(GET, side_effect=AssertionError('no request expected')):
             self.env['res.company']._cron_update_currency_rates()
-
-
-@tagged('post_install', '-at_install')
-class TestRateSettingsLeftEmpty(TransactionCase):
-
-    def test_a_company_without_the_settings_is_updated_manually(self):
-        """ The settings are not NOT NULL: a company created by a module loaded before this one has none. """
-        company = self.env['res.company'].create({'name': 'Created Early'})
-        self.env.cr.execute("UPDATE res_company SET rate_interval = NULL, rate_provider = NULL, "
-                            "rate_date_policy = NULL WHERE id = %s", [company.id])
-        company.invalidate_recordset()
-        self.env['res.company']._cron_update_currency_rates()
-        self.assertFalse(company.rate_last_update, 'nothing is fetched for a company updated manually')

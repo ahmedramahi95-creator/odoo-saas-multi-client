@@ -276,7 +276,7 @@ class TestOmWhatsapp(TransactionCase):
 
         self.assertTrue(self.account._om_whatsapp_set_picture('+32470654321', png))
         self.assertTrue(self.bob.image_1920, "Bob had no photo")
-        self.assertEqual(self._channel('+32470654321').with_user(self.user).avatar_128, self.bob.image_128,
+        self.assertEqual(self._channel('+32470654321').with_user(self.user).avatar_128.content, self.bob.image_128.content,
                          "his conversation shows it")
         self.assertNotIn(self._channel('+32470654321'), self.account._om_whatsapp_pictures_due(limit=10))
         alice_photo = str(self.alice.image_1920)
@@ -291,7 +291,7 @@ class TestOmWhatsapp(TransactionCase):
         unknown._om_whatsapp_link_partner(lumber)
         self.assertTrue(lumber.image_1920)
         self.assertFalse(unknown.image_128, "the conversation shows the contact now")
-        self.assertEqual(unknown.avatar_128, lumber.image_128)
+        self.assertEqual(unknown.avatar_128.content, lumber.image_128.content)
 
         self.account.fetch_pictures = False
         self.assertFalse(self.account._om_whatsapp_pictures_due(limit=10))
@@ -480,13 +480,11 @@ class TestOmWhatsapp(TransactionCase):
     def test_whatsapp_message_made_by_account_only(self):
         """ No faked message of a customer, nor a taken WhatsApp id: replies
         to it would go to the document of who took it. """
-        # Odoo 18 asks an email of who posts, before anything else
-        (self.user | self.other).email = 'om_whatsapp_user@example.com'
         self.account._om_whatsapp_receive('+32470123456', 'Hi', whatsapp_id='wamid.real')
         partner = self.bob.with_user(self.other)
         with self.assertRaises(AccessError):
             partner.message_post(body='I accept', message_type='om_whatsapp', author_id=self.alice.id,
-                                 email_from='alice@example.com', om_whatsapp_account_id=self.account.id)
+                                 om_whatsapp_account_id=self.account.id)
         with self.assertRaises(AccessError):
             self.bob.with_user(self.user).message_post(body='I accept', message_type='om_whatsapp',
                                                        om_whatsapp_account_id=self.account.id, om_whatsapp_id='wamid.real')
@@ -536,7 +534,8 @@ class TestOmWhatsappAutomation(TransactionCase):
         self.assertIn(self.env['ir.model']._get('sale.order') or self.env['ir.model']._get('res.partner'),
                       self.action.available_model_ids)
         self.assertNotIn(self.env['ir.model']._get('om.whatsapp.composer'), self.action.available_model_ids)
-        self.action.model_id = self.env['ir.model']._get('phone.blacklist')
+        self.assertFalse(self.action.warning)
+        self.action.model_id = self.env['ir.model']._get('res.users')
         self.assertFalse(self.action.om_whatsapp_template_id)
 
     def test_a_provider_sending_from_the_server_sends_each_record(self):

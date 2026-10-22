@@ -33,7 +33,7 @@
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_closing_move" type="object" class="oe_stat_button"
-                                icon="fa-book" invisible="not closing_move_id">
+                                icon="book" invisible="not closing_move_id">
                             <div class="o_stat_info">
                                 <span class="o_stat_text">Closing Entry</span>
                             </div>
@@ -90,7 +90,7 @@
     <menuitem id="menu_fiscal_year_closing"
               name="Year-End Closing"
               sequence="10"
-              parent="menu_account_closing"
+              parent="account.account_closing_menu"
               action="actions_account_fiscal_year"
               groups="account.group_account_manager"/>
 

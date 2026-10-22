@@ -1,9 +1,9 @@
 =======================
-Odoo 18 Reconciliation
+Odoo 20 Reconciliation
 =======================
 
 This module adds a bank reconciliation screen and a journal item matching tool
-to Odoo 18 Community Edition, together with an automatic reconciliation that
+to Odoo 20 Community Edition, together with an automatic reconciliation that
 runs in the background.
 
 Features
@@ -27,7 +27,7 @@ Features
 * Open the screen on one journal from the Reconcile button on the bank and cash
   cards of the accounting dashboard.
 * Reconcile new transactions automatically: partner mapping models fill in the
-  partner, the reconciliation models set to auto-validate are applied, and a
+  partner, reconciliation models with the automatic trigger are applied, and a
   transaction matching exactly one open item by amount and reference is
   reconciled on its own.
 * Run the automatic reconciliation from a scheduled action that treats the

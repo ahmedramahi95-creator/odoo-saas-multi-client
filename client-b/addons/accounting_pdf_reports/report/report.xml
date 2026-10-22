@@ -43,8 +43,6 @@
         <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
-
-
     <record id="action_report_cash_flow" model="ir.actions.report">
         <field name="name">Cash Flow Statement</field>
         <field name="model">account.cash.flow.report</field>
@@ -74,6 +72,14 @@
         <field name="model">account.tax.report.wizard</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_tax</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
+    </record>
+
+    <record id="action_report_account_tax_grid" model="ir.actions.report">
+        <field name="name">Tax Report by Tax Grid</field>
+        <field name="model">account.tax.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">accounting_pdf_reports.report_tax_grid</field>
         <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 

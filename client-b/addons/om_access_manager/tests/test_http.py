@@ -1,6 +1,5 @@
 import re
 
-from odoo import http
 from odoo.tests import HttpCase, new_test_user, tagged
 
 
@@ -41,7 +40,7 @@ class TestAccessProfileHttp(HttpCase):
         # and signing in again is refused, from a fresh session
         self.authenticate(None, None)
         response = self.url_open('/web/login', data={
-            'login': self.user.login, 'password': self.password, 'csrf_token': http.Request.csrf_token(self),
+            'login': self.user.login, 'password': self.password, 'csrf_token': self.csrf_token(),
         })
         self.assertIn('not allow you to sign in', response.text)
         response = self.url_open('/odoo', allow_redirects=False)
@@ -124,10 +123,10 @@ class TestAccessProfileHttp(HttpCase):
     def test_configure_from_the_menu_tree(self):
         """ A manager sets everything from the menu tree; the user gets it. """
         group = self.env['res.groups'].create({'name': 'OM Panel Test Group'})
-        self.env['ir.model.access'].create({
-            'name': 'om_access_manager panel test: tags', 'group_id': group.id, 'perm_read': True, 'perm_write': True, 'perm_create': True, 'perm_unlink': True,
+        self.env['ir.access'].create({
+            'name': 'om_access_manager panel test: tags', 'group_id': group.id, 'operation': 'crud',
             'model_id': self.env['ir.model']._get('res.partner.category').id})
-        self.user.groups_id |= group
+        self.user.group_ids |= group
         action = self.env['ir.actions.act_window'].create({
             'name': 'OM Tags', 'res_model': 'res.partner.category', 'view_mode': 'list,form'})
         app = self.env['ir.ui.menu'].create({'name': 'OM Panel App'})
@@ -164,13 +163,13 @@ class TestAccessProfileHttp(HttpCase):
             for (const section of ['pages', 'filters', 'views']) {
                 await until(`.o_om_panel_section[data-section=${section}]`);
             }
-            await until('.o_om_menu_tree_row[data-menu-id="%(tags)s"] .o_om_mark.fa-lock');
+            await until('.o_om_menu_tree_row[data-menu-id="%(tags)s"] .o_om_mark[data-icon=lock]');
             // the app: read only for everything below
             (await until('.o_om_menu_tree_row[data-menu-id="%(app)s"] .o_om_menu_tree_name')).click();
             await until('.o_om_branch_rights');
             (await until('.o_om_level[data-level=readonly]')).click();
             await wait(1500);
-            await until('.o_om_menu_tree_row[data-menu-id="%(app)s"] .o_om_mark.fa-sitemap');
+            await until('.o_om_menu_tree_row[data-menu-id="%(app)s"] .o_om_mark[data-icon=account_tree]');
             // a report, from its row under the menu
             search.value = 'OM Tag Sheet';
             search.dispatchEvent(new Event('input', { bubbles: true }));

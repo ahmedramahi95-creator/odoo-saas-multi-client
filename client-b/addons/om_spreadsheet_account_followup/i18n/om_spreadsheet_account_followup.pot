@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 07:07+0000\n"
-"PO-Revision-Date: 2026-10-22 07:07+0000\n"
+"POT-Creation-Date: 2026-10-13 15:40+0000\n"
+"PO-Revision-Date: 2026-10-13 15:40+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,9 +16,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: om_spreadsheet_account_followup
-#. odoo-javascript
-#: code:addons/om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json:0
-msgid "Amount"
+#: model:ir.module.module,description:base.module_om_spreadsheet_account_followup
+msgid ""
+"\n"
+"The Follow-ups and Cash Forecast dashboard of the Finance section: the overdue receivables and\n"
+"payables, the receipts and payments due in the next six months, the overdue balance by follow-up level and\n"
+"the cash forecast items.\n"
 msgstr ""
 
 #. module: om_spreadsheet_account_followup
@@ -43,19 +46,7 @@ msgstr ""
 #. module: om_spreadsheet_account_followup
 #. odoo-javascript
 #: code:addons/om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json:0
-msgid "Description"
-msgstr ""
-
-#. module: om_spreadsheet_account_followup
-#. odoo-javascript
-#: code:addons/om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json:0
 msgid "Due Month"
-msgstr ""
-
-#. module: om_spreadsheet_account_followup
-#. odoo-javascript
-#: code:addons/om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json:0
-msgid "Expected On"
 msgstr ""
 
 #. module: om_spreadsheet_account_followup
@@ -67,6 +58,18 @@ msgstr ""
 #. module: om_spreadsheet_account_followup
 #: model:spreadsheet.dashboard,name:om_spreadsheet_account_followup.dashboard_followups_forecast
 msgid "Follow-ups and Cash Forecast"
+msgstr ""
+
+#. module: om_spreadsheet_account_followup
+#: model:ir.module.module,summary:base.module_om_spreadsheet_account_followup
+msgid ""
+"Follow-ups and cash forecast dashboard in the Dashboards app: overdue "
+"balances and expected receipts and payments"
+msgstr ""
+
+#. module: om_spreadsheet_account_followup
+#: model:ir.module.module,shortdesc:base.module_om_spreadsheet_account_followup
+msgid "Odoo 20 Follow-ups and Cash Forecast Dashboard"
 msgstr ""
 
 #. module: om_spreadsheet_account_followup
@@ -144,22 +147,4 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json:0
 msgid "Receipts expected in 6 months"
-msgstr ""
-
-#. module: om_spreadsheet_account_followup
-#. odoo-javascript
-#: code:addons/om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json:0
-msgid "Recurrence"
-msgstr ""
-
-#. module: om_spreadsheet_account_followup
-#. odoo-javascript
-#: code:addons/om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json:0
-msgid "Type"
-msgstr ""
-
-#. module: om_spreadsheet_account_followup
-#. odoo-javascript
-#: code:addons/om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json:0
-msgid "Until"
 msgstr ""

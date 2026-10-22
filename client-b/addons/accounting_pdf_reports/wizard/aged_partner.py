@@ -20,7 +20,7 @@ class AccountAgedTrialBalance(models.TransientModel):
         if period_length <= 0:
             raise UserError(_('You must set a period length greater than 0.'))
         if not data['form']['date_from']:
-            raise UserError(_('You must set a start date.'))
+            raise UserError(_('You must set an as of date.'))
         start = data['form']['date_from']
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length - 1)

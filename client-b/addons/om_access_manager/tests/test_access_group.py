@@ -25,7 +25,7 @@ class TestAccessGroup(TransactionCase):
         return self.app.id in self.env['ir.ui.menu'].with_user(user)._visible_menu_ids()
 
     def test_the_administrator_is_an_access_manager(self):
-        self.assertIn(self.env.ref('base.user_admin'), self.group.users)
+        self.assertIn(self.env.ref('base.user_admin'), self.group.all_user_ids)
         self.assertTrue(self._visible(self.env.ref('base.user_admin')))
 
     def test_the_app_and_the_profiles_are_for_the_group_only(self):
@@ -64,19 +64,18 @@ class TestAccessGroup(TransactionCase):
         from unittest.mock import patch
         Profile = type(self.env['om.access.profile'])
         with patch.object(Profile, '_exempt_user_ids', lambda self: ()):
-            managers = self.group.users.filtered('active')
+            managers = self.group.all_user_ids.filtered('active')
             self.env['om.access.profile'].create({
                 'name': 'Locked', 'block_login': True, 'apply_to_admin': True,
                 'user_ids': [(6, 0, (managers - self.manager).ids)]})
             with self.assertRaises(Exception):
-                self.manager.groups_id = [(3, self.group.id)]
+                self.manager.group_ids = [(3, self.group.id)]
 
     def test_pages_filters_and_views_tabs(self):
         """ The three tabs show their kind of view element, and a line added on
         one of them is of that kind. They are developer mode tabs, which the
         web client hides, so the view is read rather than driven. """
-        # Odoo 18 strips the developer mode tabs from the view it serves: read the view itself
-        arch = self.env.ref('om_access_manager.om_access_profile_view_form').arch
+        arch = self.env['om.access.profile'].get_view(view_type='form')['arch']
         for kind in ('view', 'page', 'filter'):
             self.assertIn(f"default_element_type': '{kind}'", arch)
         profile = self.env['om.access.profile'].create({'name': 'Tabs'})
@@ -97,12 +96,12 @@ class TestAccessGroup(TransactionCase):
         self.assertIn(self.tags.id, menu_ids)
 
     def _app_with_its_group(self):
-        privilege = self.env['ir.module.category'].create({'name': 'OM Buying'})
+        privilege = self.env['res.groups.privilege'].create({'name': 'OM Buying'})
         user_group = self.env['res.groups'].create({
-            'name': 'User', 'category_id': privilege.id, 'implied_ids': [(4, self.env.ref('base.group_user').id)]})
+            'name': 'User', 'privilege_id': privilege.id, 'implied_ids': [(4, self.env.ref('base.group_user').id)]})
         self.env['res.groups'].create({
-            'name': 'Administrator', 'category_id': privilege.id, 'implied_ids': [(4, user_group.id)]})
-        app = self.env['ir.ui.menu'].create({'name': 'OM Buying', 'groups_id': [(6, 0, user_group.ids)]})
+            'name': 'Administrator', 'privilege_id': privilege.id, 'implied_ids': [(4, user_group.id)]})
+        app = self.env['ir.ui.menu'].create({'name': 'OM Buying', 'group_ids': [(6, 0, user_group.ids)]})
         self.env['ir.ui.menu'].create({'name': 'Orders', 'parent_id': app.id,
                                        'action': f'ir.actions.act_window,{self.tags.action.id}'})
         return privilege, user_group, app
@@ -122,7 +121,7 @@ class TestAccessGroup(TransactionCase):
                                                    'group_id': user_group.id})
         self.assertEqual(panel['grants'][0]['granted'], user_group.id)
         self.env.invalidate_all()
-        self.assertIn(user_group, self.employee.groups_id)
+        self.assertIn(user_group, self.employee.all_group_ids)
         self.assertIn(app.id, Menu.with_user(self.employee)._visible_menu_ids())
         self.assertIn(app.id, profile.om_tree_state()['granted_apps'])
         report = self.env['om.access.test.user'].with_user(self.manager).create({'user_id': self.employee.id}).report
@@ -130,14 +129,14 @@ class TestAccessGroup(TransactionCase):
         # the profile archived, the access goes with it
         profile.active = False
         self.env.invalidate_all()
-        self.assertNotIn(user_group, self.employee.groups_id)
+        self.assertNotIn(user_group, self.employee.all_group_ids)
         profile.active = True
         self.env.invalidate_all()
-        self.assertIn(user_group, self.employee.groups_id)
+        self.assertIn(user_group, self.employee.all_group_ids)
         # and back to the user's own groups
         profile.om_menu_panel_set(app.id, {'kind': 'grant', 'privilege_id': privilege.id, 'group_id': False})
         self.env.invalidate_all()
-        self.assertNotIn(user_group, self.employee.groups_id)
+        self.assertNotIn(user_group, self.employee.all_group_ids)
         self.assertNotIn(app.id, Menu.with_user(self.employee)._visible_menu_ids())
 
     def test_administrators_are_never_granted(self):

@@ -87,7 +87,7 @@ class OmAccessAppWizard(models.TransientModel):
         """ The menus of the app, depth first in their order on screen:
         [(menu, depth, is_config)]. """
         result = []
-        app = self.app_id.sudo().with_context(**{'ir.ui.menu.full_list': True})
+        app = self.app_id.sudo()
         xmlids = app.search([('id', 'child_of', app.id)]).get_external_id()
 
         def is_config_root(menu):
@@ -163,7 +163,7 @@ class OmAccessAppWizard(models.TransientModel):
     def _apps_by_model(self):
         """ {model: names of the apps whose menus open it} """
         apps = {}
-        Menu = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True})
+        Menu = self.env['ir.ui.menu'].sudo()
         for menu in Menu.search([('action', '!=', False)]):
             model_name = self._menu_model(menu)
             if not model_name:

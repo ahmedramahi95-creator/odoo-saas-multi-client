@@ -27,34 +27,27 @@ def build_budgets():
     dashboard = dashboard_sheet(workbook)
     data = workbook.sheet('Data')
     period = workbook.date_filter('period', 'Period', 'this_year')
-    budget = workbook.relation_filter('budget', 'Budget', 'crossovered.budget')
-    matching = {period: ('date_from', 'date'), budget: ('crossovered_budget_id', 'many2one')}
-    live = [['crossovered_budget_state', 'in', ['confirm', 'validate', 'done']]]
-    measures = ['planned_amount', ('theoritical_amount', 'sum'), ('practical_amount', 'sum')]
-    # the budgets plan the expenses as negative amounts and the revenues as positive ones
-    budget_types = {
-        'expense': workbook.pivot('Expense Budgets', 'crossovered.budget.lines',
-                                  live + [['planned_amount', '<', 0]], measures, field_matching=matching),
-        'revenue': workbook.pivot('Revenue Budgets', 'crossovered.budget.lines',
-                                  live + [['planned_amount', '>', 0]], measures, field_matching=matching),
-    }
-    positions = workbook.pivot('Budgets by Position', 'crossovered.budget.lines', live, measures,
-                               rows=['general_budget_id'], field_matching=matching)
+    budget = workbook.relation_filter('budget', 'Budget', 'account.budget')
+    matching = {period: ('date_from', 'date'), budget: ('budget_id', 'many2one')}
+    live = [['budget_state', 'in', ['confirm', 'validate', 'done']]]
+    measures = ['planned_amount', ('theoretical_amount', 'sum'), ('practical_amount', 'sum')]
+    totals = workbook.pivot('Budgets by Type', 'account.budget.line', live, measures, columns=['budget_type'],
+                            field_matching=matching)
+    positions = workbook.pivot('Budgets by Position', 'account.budget.line', live, measures,
+                               rows=['budget_type', 'position_id'], field_matching=matching)
 
     lines = [
         ('expense_planned', 'Planned expenses', 'planned_amount', 'expense'),
-        ('expense_theoretical', 'Expenses expected to date', 'theoritical_amount:sum', 'expense'),
+        ('expense_theoretical', 'Expenses expected to date', 'theoretical_amount:sum', 'expense'),
         ('expense_actual', 'Actual expenses', 'practical_amount:sum', 'expense'),
         ('revenue_planned', 'Planned revenues', 'planned_amount', 'revenue'),
-        ('revenue_theoretical', 'Revenues expected to date', 'theoritical_amount:sum', 'revenue'),
+        ('revenue_theoretical', 'Revenues expected to date', 'theoretical_amount:sum', 'revenue'),
         ('revenue_actual', 'Actual revenues', 'practical_amount:sum', 'revenue'),
     ]
     refs = {}
     for row, (key, text, measure, budget_type) in enumerate(lines):
         data.set(0, row, label(text), TEXT)
-        # the expenses are shown positive, as they are read
-        sign = '-' if budget_type == 'expense' else ''
-        refs[key] = data.set(1, row, '=%sPIVOT.VALUE(%s,"%s")' % (sign, budget_types[budget_type], measure))
+        refs[key] = data.set(1, row, '=PIVOT.VALUE(%s,"%s","budget_type","%s")' % (totals, measure, budget_type))
     data.set(0, 6, label('Expenses spent of the plan'), TEXT)
     refs['expense_rate'] = data.set(1, 6, '=IFERROR(B3/B1,0)', fmt=PERCENT_FORMAT)
     data.set(0, 7, label('Revenues earned of the plan'), TEXT)
@@ -79,7 +72,7 @@ def build_budgets():
                                            baseline=baseline, baseline_text='vs expected to date' if baseline else None)
         dashboard.figures[-1]['data'].update(baselineColorUp=up, baselineColorDown=down)
     for figure in figures.values():
-        workbook.link_menu(figure, 'om_account_budget.menu_act_crossovered_budget_view')
+        workbook.link_menu(figure, 'om_account_budget.menu_account_budget')
     for index, (key, title, lower, upper, colors) in enumerate((
             ('expense_gauge', 'Expenses Spent (%)', 80, 100, ('#6aa84f', '#f1c232', '#cc0000')),
             ('revenue_gauge', 'Revenues Earned (%)', 50, 90, ('#cc0000', '#f1c232', '#6aa84f')))):

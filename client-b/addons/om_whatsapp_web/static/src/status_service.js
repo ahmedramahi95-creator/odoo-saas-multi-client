@@ -1,4 +1,4 @@
-import { reactive } from "@odoo/owl";
+import { proxy } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { user } from "@web/core/user";
@@ -91,7 +91,7 @@ export function describeStatus(info, page, account) {
 }
 
 /** The status of WhatsApp Web in this browser, shared by the dots of every view. */
-export const whatsappStatus = reactive({
+export const whatsappStatus = proxy({
     ready: false,
     hasAccount: false,
     level: "unknown",

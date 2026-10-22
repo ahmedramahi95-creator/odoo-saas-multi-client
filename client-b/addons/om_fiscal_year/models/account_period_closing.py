@@ -46,9 +46,8 @@ class AccountPeriodClosing(models.Model):
     closed_on = fields.Datetime(readonly=True, copy=False)
     previous_lock_dates = fields.Json(readonly=True, copy=False)
 
-    _sql_constraints = [
-        ('company_period_uniq', 'unique(company_id, date_from)', 'This period is already being closed.'),
-    ]
+    _company_period_uniq = models.Constraint(
+        'unique(company_id, date_from)', 'This period is already being closed.')
 
     @api.depends('date_from', 'date_to')
     def _compute_name(self):

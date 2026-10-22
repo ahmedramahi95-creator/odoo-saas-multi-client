@@ -3,9 +3,9 @@
 import json
 
 from odoo.exceptions import AccessError
-from odoo import http
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
+from odoo.tools import mute_logger
 
 
 @tagged('post_install', '-at_install')
@@ -33,18 +33,16 @@ class TestMoreSwitches(HttpCase):
         self.assertIn('o_om_no_favorites', page)
         self.assertNotIn('o_om_no_custom_group', page)
 
+    @mute_logger('odoo.http')
     def test_saving_a_search_is_refused(self):
         self.authenticate(self.user.login, self.password)
-        # Odoo 18 saves a search with create_or_replace, for one user
-        values = {'name': 'Mine', 'model_id': 'res.partner', 'domain': '[]', 'user_id': self.user.id}
-        self._call('ir.filters', 'create_or_replace', [values])
+        values = {'name': 'Mine', 'model_id': 'res.partner', 'domain': '[]', 'user_ids': [self.user.id]}
+        self._call('ir.filters', 'create_filter', [values])
         self.profile.block_favorites = True
         with self.assertRaises(JsonRpcException):
-            self._call('ir.filters', 'create_or_replace', [dict(values, name='Another')])
+            self._call('ir.filters', 'create_filter', [dict(values, name='Another')])
 
     def test_changing_properties_is_refused(self):
-        if 'properties' not in self.env['res.partner']._fields:
-            self.skipTest("Odoo 18 contacts have no properties")
         self.profile.block_properties = True
         definition = [{'name': 'om_prop', 'string': 'Prop', 'type': 'char', 'definition_changed': True}]
         partner = self.partner.with_user(self.user)
@@ -65,6 +63,7 @@ class TestMoreSwitches(HttpCase):
             module.with_user(admin).button_install()
         self.assertEqual(module.state, 'uninstalled')
 
+    @mute_logger('odoo.addons.web.controllers.export')
     def test_a_field_kept_out_of_the_exports(self):
         self.env['om.access.profile.field'].create({
             'profile_id': self.profile.id, 'model_id': self.env['ir.model']._get('res.partner').id,
@@ -80,13 +79,12 @@ class TestMoreSwitches(HttpCase):
         self.assertEqual(rows[0]['email'], 'secret@example.com')
         data = json.dumps({'model': 'res.partner', 'ids': self.partner.ids, 'domain': [], 'import_compat': False,
                            'fields': [{'name': 'email', 'label': 'Email'}]})
-        response = self.url_open('/web/export/csv', data={'data': data, 'csrf_token': http.Request.csrf_token(self)})
+        response = self.url_open('/web/export/csv', data={'data': data, 'csrf_token': self.csrf_token()})
         self.assertNotIn('secret@example.com', response.text)
 
     def test_date_presets(self):
         presets = self.env['om.access.profile.model']._preset_domains('res.partner')
-        self.assertEqual(presets['month'], (
-            'domain', "[('create_date', '>=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"))
+        self.assertEqual(presets['month'], ('domain', "[('create_date', '>=', 'today =1d')]"))
         line = self.env['om.access.profile.model'].create({
             'profile_id': self.profile.id, 'model_id': self.env['ir.model']._get('res.partner').id,
             'domain': presets['month'][1]})

@@ -102,8 +102,7 @@ class ReportFinancial(models.AbstractModel):
                 'name': report.name,
                 'balance': res[report.id]['balance'] * float(report.sign),
                 'type': 'report',
-                # style_overwrite defaults to the *string* '0' (automatic formatting),
-                # which is truthy: int() it so that we really fall back on report.level
+                # the style is a selection of strings: '0' is the automatic formatting, i.e. the level in the tree
                 'level': int(report.style_overwrite or 0) or report.level,
                 'account_type': report.type or False, #used to underline the financial report balances
             }
@@ -137,7 +136,8 @@ class ReportFinancial(models.AbstractModel):
                     if data['debit_credit']:
                         vals['debit'] = value['debit']
                         vals['credit'] = value['credit']
-                        if not self.env.company.currency_id.is_zero(vals['debit']) or not self.env.company.currency_id.is_zero(vals['credit']):
+                        if (not self.env.company.currency_id.is_zero(vals['debit'])
+                                or not self.env.company.currency_id.is_zero(vals['credit'])):
                             flag = True
                     if not self.env.company.currency_id.is_zero(vals['balance']):
                         flag = True
@@ -152,7 +152,8 @@ class ReportFinancial(models.AbstractModel):
 
     @api.model
     def _get_report_values(self, docids, data=None):
-        if not data.get('form') or not self.env.context.get('active_model') or not self.env.context.get('active_id'):
+        if (not data.get('form') or not self.env.context.get('active_model')
+                or self.env.context.get('active_id') is None):
             raise UserError(_("Form content is missing, this report cannot be printed."))
 
         model = self.env.context.get('active_model')

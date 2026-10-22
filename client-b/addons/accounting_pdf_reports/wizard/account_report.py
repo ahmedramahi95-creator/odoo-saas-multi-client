@@ -9,8 +9,8 @@ class AccountingReport(models.TransientModel):
     @api.model
     def _get_account_report(self):
         reports = []
-        if self._context.get('active_id'):
-            menu = self.env['ir.ui.menu'].browse(self._context.get('active_id')).name
+        if self.env.context.get('active_id'):
+            menu = self.env['ir.ui.menu'].browse(self.env.context.get('active_id')).name
             reports = self.env['account.financial.report'].search([('name', 'ilike', menu)])
         return reports and reports[0] or False
 
@@ -43,9 +43,10 @@ class AccountingReport(models.TransientModel):
         return result
 
     def check_report(self):
-        res = super(AccountingReport, self).check_report()
+        res = super().check_report()
         data = {}
-        data['form'] = self.read(['account_report_id', 'date_from_cmp', 'date_to_cmp', 'journal_ids', 'filter_cmp', 'target_move'])[0]
+        data['form'] = self.read(['account_report_id', 'date_from_cmp', 'date_to_cmp', 'journal_ids',
+                                  'filter_cmp', 'target_move'])[0]
         for field in ['account_report_id']:
             if isinstance(data['form'][field], tuple):
                 data['form'][field] = data['form'][field][0]
@@ -54,5 +55,7 @@ class AccountingReport(models.TransientModel):
         return res
 
     def _print_report(self, data):
-        data['form'].update(self.read(['date_from_cmp', 'debit_credit', 'date_to_cmp', 'filter_cmp', 'account_report_id', 'enable_filter', 'label_filter', 'target_move'])[0])
-        return self.env.ref('accounting_pdf_reports.action_report_financial').report_action(self, data=data, config=False)
+        data['form'].update(self.read(['date_from_cmp', 'debit_credit', 'date_to_cmp', 'filter_cmp',
+                                       'account_report_id', 'enable_filter', 'label_filter', 'target_move'])[0])
+        return self.env.ref('accounting_pdf_reports.action_report_financial').report_action(
+            self, data=data, config=False)

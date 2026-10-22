@@ -66,21 +66,21 @@
                     <separator string="Which records"/>
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <button name="action_clear_filters" type="object" string="All Records"
-                                class="btn-secondary" icon="fa-globe"/>
+                                class="btn-secondary" icon="public"/>
                         <button name="action_preset_own" type="object" string="Their Own Records"
-                                class="btn-secondary" icon="fa-user"
+                                class="btn-secondary" icon="person"
                                 invisible="'own' not in (available_presets or '')"/>
                         <button name="action_preset_team" type="object" string="Their Sales Team"
-                                class="btn-secondary" icon="fa-users"
+                                class="btn-secondary" icon="group"
                                 invisible="'team' not in (available_presets or '')"/>
                         <button name="action_preset_company" type="object" string="Their Companies"
-                                class="btn-secondary" icon="fa-building"
+                                class="btn-secondary" icon="business"
                                 invisible="'company' not in (available_presets or '')"/>
                         <button name="action_preset_warehouse" type="object" string="Their Warehouse"
                                 class="btn-secondary" icon="inventory_2"
                                 invisible="'warehouse' not in (available_presets or '')"/>
                         <button name="action_preset_draft" type="object" string="Edit Drafts Only"
-                                class="btn-secondary" icon="fa-pencil"
+                                class="btn-secondary" icon="edit"
                                 invisible="'draft' not in (available_presets or '')"/>
                     </div>
                     <group>
@@ -139,7 +139,7 @@
             <form string="Access Profile">
                 <header>
                     <button name="action_test_user" type="object" string="Preview as User"
-                            class="btn-primary" icon="fa-eye"/>
+                            class="btn-primary" icon="visibility"/>
                 </header>
                 <sheet>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
@@ -170,7 +170,7 @@
                                     do there. In developer mode, more tabs list the same rules in full.
                                 </span>
                                 <button name="action_restrict_app" type="object" string="Restrict an App"
-                                        class="btn-link" icon="fa-th"/>
+                                        class="btn-link" icon="apps"/>
                             </div>
                             <field name="hidden_menu_ids" nolabel="1" widget="om_access_menu_tree"/>
                         </page>
@@ -261,9 +261,9 @@
                         </page>
                         <page string="Models" name="models" groups="base.group_no_one">
                             <button name="action_load_models" type="object" string="Load Models"
-                                    class="btn-link" icon="fa-download"/>
+                                    class="btn-link" icon="download"/>
                             <div class="text-muted mb-2">
-                                Click the <i class="oi" data-icon="fa-filter"/> of a line to pick its records
+                                Click the <i class="oi" data-icon="filter_alt"/> of a line to pick its records
                                 in one click (their own, their team, their companies...) or with
                                 the filter editor. The Record Filter applies to all four operations. The per
                                 operation filters narrow one of them further, which is how
@@ -273,7 +273,7 @@
                             <field name="model_ids" nolabel="1">
                                 <list string="Models" editable="bottom">
                                     <field name="model_id" options="{'no_create': True}"/>
-                                    <button name="action_open_rule" type="object" icon="fa-filter"
+                                    <button name="action_open_rule" type="object" icon="filter_alt"
                                             title="Records, filters and presets"/>
                                     <field name="model" optional="hide"/>
                                     <field name="perm_read" string="Read"/>
@@ -327,7 +327,7 @@
                         </page>
                         <page string="Buttons" name="buttons" groups="base.group_no_one">
                             <button name="action_scan_buttons" type="object" string="Scan Buttons"
-                                    class="btn-link" icon="fa-search"/>
+                                    class="btn-link" icon="search"/>
                             <div class="text-muted mb-2">
                                 Blocking refuses the call on the server and ignores the view and
                                 the button id, because the server only learns which method was
@@ -371,7 +371,7 @@
                         </page>
                         <page string="Pages" name="pages" groups="base.group_no_one">
                             <button name="action_scan_buttons" type="object" string="Scan Views"
-                                    class="btn-link" icon="fa-search"/>
+                                    class="btn-link" icon="search"/>
                             <div class="text-muted mb-2">
                                 The pages (tabs) of the forms, removed from the screen, always or
                                 only for the records matching a condition.
@@ -388,7 +388,7 @@
                         </page>
                         <page string="Filters" name="filters" groups="base.group_no_one">
                             <button name="action_scan_buttons" type="object" string="Scan Views"
-                                    class="btn-link" icon="fa-search"/>
+                                    class="btn-link" icon="search"/>
                             <div class="text-muted mb-2">
                                 The filters and group-bys of the search bar, and the search panel,
                                 removed from the screen.
@@ -497,7 +497,7 @@
         <field name="model_id" ref="model_om_access_profile"/>
         <field name="binding_model_id" ref="model_om_access_profile"/>
         <field name="binding_view_types">form</field>
-        <field name="groups_id" eval="[(4, ref('om_access_manager.group_access_manager'))]"/>
+        <field name="group_ids" eval="[(4, ref('om_access_manager.group_access_manager'))]"/>
         <field name="state">code</field>
         <field name="code">action = records.action_copy_restrictions()</field>
     </record>

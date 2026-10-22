@@ -1,7 +1,7 @@
 # Per model rules of a profile: R/C/U/D, record filters and model scoped UI switches.
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.osv import expression
+from odoo.fields import Domain
 from odoo.tools.safe_eval import safe_eval
 
 # the general filter first: it is ANDed with the per operation one
@@ -85,10 +85,10 @@ class OmAccessProfileModel(models.Model):
 
     available_presets = fields.Char(compute='_compute_available_presets')
 
-    _sql_constraints = [
-        ('unique_model', 'UNIQUE(profile_id, model_id)',
-         'A profile can only carry one rule per model.'),
-    ]
+    _unique_model = models.Constraint(
+        'UNIQUE(profile_id, model_id)',
+        'A profile can only carry one rule per model.',
+    )
 
     # a rule can take the access profiles away from the last administrator
     @api.model_create_multi
@@ -107,13 +107,13 @@ class OmAccessProfileModel(models.Model):
     def _check_domain(self):
         eval_context = self.env['om.access.profile']._om_eval_context()
         for line in self:
-            model = self.env[line.sudo().model_id.model].sudo()
+            model = self.env[line.model_id.model].sudo()
             for field_name in DOMAIN_FIELDS:
                 raw = (line[field_name] or '').strip()
                 if not raw:
                     continue
                 try:
-                    expression.expression(safe_eval(raw, eval_context), model)
+                    Domain(safe_eval(raw, eval_context)).validate(model)
                 except Exception as error:  # noqa: BLE001
                     raise ValidationError(_(
                         "Invalid %(filter)s on %(model)s: %(error)s",
@@ -157,14 +157,11 @@ class OmAccessProfileModel(models.Model):
                 chain = ['employee_id' + '.parent_id' * level + '.user_id' for level in range(4)]
                 presets['hierarchy'] = ('domain', "['|', '|', '|', %s]" % ', '.join(
                     "('%s', '=', uid)" % path for path in chain))
-        # dates from today: Odoo 18 has no relative dates in domains, the
-        # access domains are computed again every day instead (base_model.py)
+        # relative dates, resolved by each query: the cached access domain does not go stale
         if 'create_date' in model._fields:
-            for key, start in (('today', 'context_today()'),
-                               ('week', 'context_today() - relativedelta(days=context_today().weekday())'),
-                               ('month', 'context_today().replace(day=1)'),
-                               ('year', 'context_today().replace(month=1, day=1)')):
-                presets[key] = ('domain', "[('create_date', '>=', (%s).strftime('%%Y-%%m-%%d'))]" % start)
+            for key, start in (('today', 'today'), ('week', 'today =week_start'),
+                               ('month', 'today =1d'), ('year', 'today =1m =1d')):
+                presets[key] = ('domain', "[('create_date', '>=', '%s')]" % start)
         state = model._fields.get('state')
         if state is not None and state.type == 'selection' and 'draft' in dict(
                 state._description_selection(self.env)):

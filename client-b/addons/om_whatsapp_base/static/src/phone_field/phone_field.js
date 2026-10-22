@@ -1,20 +1,13 @@
 import { _t } from "@web/core/l10n/translation";
-import { onWillStart } from "@odoo/owl";
+import { onWillStart, t } from "@odoo/owl";
 import { user } from "@web/core/user";
 import { useService } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
-import { formPhoneField, PhoneField, phoneField } from "@web/views/fields/phone/phone_field";
+import { PhoneField, phoneField, phoneFieldProps } from "@web/views/fields/phone/phone_field";
 import { openWhatsappComposer, WHATSAPP_GROUP } from "../whatsapp_composer";
 
-patch(PhoneField, {
-    defaultProps: {
-        ...PhoneField.defaultProps,
-        enableWhatsapp: true,
-    },
-    props: {
-        ...PhoneField.props,
-        enableWhatsapp: { type: Boolean, optional: true },
-    },
+Object.assign(phoneFieldProps, {
+    enableWhatsapp: t.boolean().optional(true),
 });
 
 patch(PhoneField.prototype, {
@@ -25,32 +18,41 @@ patch(PhoneField.prototype, {
             this.canWhatsapp = await user.hasGroup(WHATSAPP_GROUP);
         });
     },
-    get showWhatsapp() {
-        return Boolean(this.props.enableWhatsapp && this.canWhatsapp && this.props.record.data[this.props.name]);
-    },
-    async onClickWhatsapp() {
-        const record = this.props.record;
-        const number = record.data[this.props.name];
-        if (!(await record.save()) || !record.resId) {
-            return;
+    get actionButtons() {
+        const buttons = super.actionButtons;
+        if (!this.props.enableWhatsapp || !this.canWhatsapp || !this.value) {
+            return buttons;
         }
-        openWhatsappComposer(this.action, {
-            resModel: record.resModel,
-            resIds: [record.resId],
-            number,
-            onClose: () => record.load(),
-        });
+        return [
+            ...buttons,
+            {
+                icon: "oi_whatsapp",
+                name: _t("WhatsApp"),
+                onSelected: async () => {
+                    const record = this.props.record;
+                    if (!(await record.save()) || !record.resId) {
+                        return;
+                    }
+                    openWhatsappComposer(this.action, {
+                        resModel: record.resModel,
+                        resIds: [record.resId],
+                        number: this.value,
+                        onClose: () => record.load(),
+                    });
+                },
+            },
+        ];
     },
 });
 
-const descriptionPatch = (description) => ({
+patch(phoneField, {
     extractProps({ options }) {
         const props = super.extractProps(...arguments);
         props.enableWhatsapp = options.enable_whatsapp;
         return props;
     },
     supportedOptions: [
-        ...(description.supportedOptions || []),
+        ...(phoneField.supportedOptions || []),
         {
             label: _t("Enable WhatsApp"),
             name: "enable_whatsapp",
@@ -59,6 +61,3 @@ const descriptionPatch = (description) => ({
         },
     ],
 });
-
-patch(phoneField, descriptionPatch(phoneField));
-patch(formPhoneField, descriptionPatch(formPhoneField));

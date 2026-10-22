@@ -15,7 +15,7 @@ class AccountFollowupStat(models.Model):
     _auto = False
     _depends = {
         'account.move.line': [
-            'account_id', 'company_id', 'date', 'date_maturity', 'amount_residual', 'reconciled', 'debit', 'credit',
+            'account_id', 'company_id', 'date', 'date_maturity', 'amount_residual', 'reconciled',
             'parent_state', 'followup_date', 'followup_line_id', 'partner_id', 'move_id',
         ],
         'account.move': ['followup_disputed'],
@@ -30,9 +30,6 @@ class AccountFollowupStat(models.Model):
     followup_id = fields.Many2one('followup.line', 'Follow-up Level', readonly=True)
     balance = fields.Float('Amount Due', readonly=True)
     balance_overdue = fields.Float('Amount Overdue', readonly=True)
-    # kept from 19.0, when there was a line per journal item
-    debit = fields.Float('Debit', readonly=True)
-    credit = fields.Float('Credit', readonly=True)
     company_id = fields.Many2one('res.company', 'Company', readonly=True)
 
     @api.model
@@ -47,8 +44,6 @@ class AccountFollowupStat(models.Model):
                     max(l.date) AS date_move_last,
                     max(l.followup_date) AS date_followup,
                     (array_agg(l.followup_line_id ORDER BY fl.delay DESC NULLS LAST))[1] AS followup_id,
-                    sum(l.debit) AS debit,
-                    sum(l.credit) AS credit,
                     sum(l.amount_residual) AS balance,
                     sum(CASE WHEN COALESCE(l.date_maturity, l.date) <= CURRENT_DATE
                              THEN l.amount_residual ELSE 0 END) AS balance_overdue,

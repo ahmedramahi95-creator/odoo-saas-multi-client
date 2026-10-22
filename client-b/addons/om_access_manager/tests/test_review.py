@@ -2,12 +2,11 @@
 import json
 from datetime import datetime, timedelta
 from unittest.mock import patch
-import xmlrpc.client
 
 from odoo.exceptions import AccessError, ValidationError
-from odoo import http
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
+from odoo.tools import mute_logger
 
 
 @tagged('post_install', '-at_install')
@@ -44,21 +43,24 @@ class TestReview(HttpCase):
         return self.make_jsonrpc_request(route, {
             'model': model, 'method': method, 'args': args, 'kwargs': kwargs or {}})
 
+    @mute_logger('odoo.addons.web.controllers.utils')
     def test_call_button_carries_the_field_guard(self):
         result = self._rpc('/web/dataset/call_button', 'res.partner', 'web_search_read',
                            [[('id', '=', self.partner.id)], {'email': {}}])
         self.assertIs(result['records'][0]['email'], False)
 
+    @mute_logger('odoo.addons.web.controllers.export')
     def test_the_export_dialog_and_file(self):
         fields = self.make_jsonrpc_request('/web/export/get_fields', {'model': 'res.partner', 'domain': []})
         self.assertNotIn('email', [field['id'] for field in fields])
         self.assertIn('name', [field['id'] for field in fields])
         data = json.dumps({'model': 'res.partner', 'ids': self.partner.ids, 'domain': [], 'import_compat': False,
                            'fields': [{'name': 'name', 'label': 'Name'}, {'name': 'email', 'label': 'Email'}]})
-        response = self.url_open('/web/export/csv', data={'data': data, 'csrf_token': http.Request.csrf_token(self)})
+        response = self.url_open('/web/export/csv', data={'data': data, 'csrf_token': self.csrf_token()})
         self.assertNotIn('secret@example.com', response.text)
         self.assertIn('does not allow using the field', response.text)
 
+    @mute_logger('odoo.http')
     def test_a_language_or_an_aggregate_does_not_hide_a_field(self):
         for method, args, kwargs in (
             ('export_data', [self.partner.ids, ['email@en_US']], {}),
@@ -70,7 +72,6 @@ class TestReview(HttpCase):
                 self._rpc(f'/web/dataset/call_kw/res.partner/{method}', 'res.partner', method, args, kwargs)
 
     def test_values_read_for_a_grouped_relation_are_blanked(self):
-        self.skipTest("Odoo 18 groups without reading the values of the grouped relation")
         result = self._rpc('/web/dataset/call_kw/res.partner/web_read_group', 'res.partner', 'web_read_group',
                            [[('id', '=', self.child.id)], ['parent_id']],
                            {'groupby_read_specification': {'parent_id': {'email': {}}}})
@@ -101,19 +102,18 @@ class TestReview(HttpCase):
         with self.assertRaises(AccessError):
             self.partner.with_user(self.user).write({'name': 'Not mine'})
 
+    @mute_logger('odoo.http')
     def test_an_api_key_follows_the_sign_in_rules(self):
-        # Odoo 18 has no JSON-2: an API key is used over XML-RPC
         key = self.env['res.users.apikeys'].with_user(self.user)._generate(
             'rpc', 'review', datetime.now() + timedelta(days=1))
-        count = self.xmlrpc_object.execute_kw(
-            self.env.cr.dbname, self.user.id, key, 'res.partner', 'search_count', [[]])
-        self.assertTrue(count)
+        headers = {'Authorization': f'bearer {key}', 'X-Odoo-Database': self.env.cr.dbname}
+        self.assertEqual(self.url_open('/json/2/res.partner/search_count', json={'domain': []},
+                                       headers=headers).status_code, 200)
         self.profile.block_login = True
-        self.env.flush_all()
-        with self.assertRaises(xmlrpc.client.Fault):
-            self.xmlrpc_object.execute_kw(
-                self.env.cr.dbname, self.user.id, key, 'res.partner', 'search_count', [[]])
+        self.assertNotEqual(self.url_open('/json/2/res.partner/search_count', json={'domain': []},
+                                          headers=headers).status_code, 200)
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc')
     def test_xmlrpc_and_the_allowed_networks(self):
         from odoo.addons.om_user_audit.models.client_call import RPC_ADDRESS
         from odoo.exceptions import AccessDenied
@@ -137,7 +137,7 @@ class TestReview(HttpCase):
 
     def test_the_last_administrator_from_the_user_side(self):
         Profile = type(self.env['om.access.profile'])
-        admins = self.env.ref('base.group_system').users
+        admins = self.env.ref('base.group_system').all_user_ids
         locked = self.env['om.access.profile'].create({'name': 'Locked', 'block_login': True,
                                                        'apply_to_admin': True})
         with patch.object(Profile, '_exempt_user_ids', lambda self: ()), self.assertRaises(ValidationError):
@@ -148,6 +148,7 @@ class TestReview(HttpCase):
         with self.assertRaises(AccessError):
             other.with_user(self.user).read(['access_effective'])
 
+    @mute_logger('odoo.http')
     def test_a_note_naming_partners_is_a_message(self):
         self.profile.hide_send_message_all = True
         with self.assertRaises(JsonRpcException):

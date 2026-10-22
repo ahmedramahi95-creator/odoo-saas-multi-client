@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from odoo import api, models, _
 from odoo.exceptions import UserError
+from odoo.fields import Domain
 
 # Section and line of the statement for the cash paid or received against an account of a type, when the
 # account does not choose its section
@@ -66,9 +67,9 @@ class ReportCashFlow(models.AbstractModel):
     @api.model
     def _get_line_domain(self, form, company):
         states = ('posted',) if form['target_move'] == 'posted' else ('draft', 'posted')
-        domain = [('company_id', 'child_of', company.id), ('parent_state', 'in', states)]
+        domain = Domain('company_id', 'child_of', company.id) & Domain('parent_state', 'in', states)
         if form.get('journal_ids'):
-            domain.append(('journal_id', 'in', form['journal_ids']))
+            domain &= Domain('journal_id', 'in', form['journal_ids'])
         return domain
 
     @api.model
@@ -115,10 +116,10 @@ class ReportCashFlow(models.AbstractModel):
         if not date_from or not date_to:
             raise UserError(_('Set the start and end dates of the cash flow statement.'))
         MoveLine = self.env['account.move.line']
-        cash_domain = self._get_line_domain(form, company) + [('account_id.account_type', '=', 'asset_cash')]
+        cash_domain = self._get_line_domain(form, company) & Domain('account_id.account_type', '=', 'asset_cash')
 
-        [(opening,)] = MoveLine._read_group(cash_domain + [('date', '<', date_from)], aggregates=['balance:sum'])
-        cash_lines = MoveLine.search(cash_domain + [('date', '>=', date_from), ('date', '<=', date_to)])
+        [(opening,)] = MoveLine._read_group(cash_domain & Domain('date', '<', date_from), aggregates=['balance:sum'])
+        cash_lines = MoveLine.search(cash_domain & Domain('date', '>=', date_from) & Domain('date', '<=', date_to))
         net_change = sum(cash_lines.mapped('balance'))
 
         transit_accounts = self._get_transit_accounts(company)

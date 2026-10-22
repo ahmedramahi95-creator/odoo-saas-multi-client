@@ -1,9 +1,9 @@
 ==============================================
-Odoo 18 Follow-ups and Cash Forecast Dashboard
+Odoo 20 Follow-ups and Cash Forecast Dashboard
 ==============================================
 
-This module adds the Follow-ups and Cash Forecast dashboard to the Finance section of the Dashboards app of Odoo 18
-Community Edition, next to the accounting dashboards of Odoo 18 Accounting Dashboards. It is installed
+This module adds the Follow-ups and Cash Forecast dashboard to the Finance section of the Dashboards app of Odoo 20
+Community Edition, next to the accounting dashboards of Odoo 20 Accounting Dashboards. It is installed
 automatically when om_account_followup and om_account_cash_forecast and om_spreadsheet_account are installed.
 
 Features

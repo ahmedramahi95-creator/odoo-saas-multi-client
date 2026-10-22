@@ -71,10 +71,10 @@ class MailThread(models.AbstractModel):
         return super()._get_message_create_valid_field_names() | {
             'om_whatsapp_account_id', 'om_whatsapp_id', 'om_whatsapp_template_id'}
 
-    def _notify_get_recipients(self, message, msg_vals=False, **kwargs):
+    def _notify_get_recipients(self, message, **kwargs):
         """ A WhatsApp message is not mailed: the customer has it in WhatsApp,
         the users who follow the document get it in their Inbox. """
-        recipients = super()._notify_get_recipients(message, msg_vals, **kwargs)
+        recipients = super()._notify_get_recipients(message, **kwargs)
         if message.message_type != 'om_whatsapp':
             return recipients
         return [dict(recipient, notif='inbox') for recipient in recipients if recipient['uid'] and not recipient['share']]

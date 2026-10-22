@@ -4,16 +4,25 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 07:07+0000\n"
-"PO-Revision-Date: 2026-10-22 07:07+0000\n"
+"POT-Creation-Date: 2026-10-13 15:40+0000\n"
+"PO-Revision-Date: 2026-10-13 15:40+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: om_account_check_printing
+#: model:ir.module.module,description:base.module_om_account_check_printing
+msgid ""
+"\n"
+"Print vendor payments on the cheques of your bank: each bank journal has its cheque format, with the paper\n"
+"size and the position of the date, payee, amount, amount in words and the other fields in millimetres,\n"
+"optional payment stubs and a test print to calibrate the positions on a real cheque.\n"
+msgstr ""
 
 #. module: om_account_check_printing
 #. odoo-python
@@ -97,11 +106,6 @@ msgstr ""
 #. module: om_account_check_printing
 #: model_terms:ir.ui.view,arch_db:om_account_check_printing.check_pages
 msgid "Balance Due"
-msgstr ""
-
-#. module: om_account_check_printing
-#: model:ir.model,name:om_account_check_printing.model_res_partner_bank
-msgid "Bank Accounts"
 msgstr ""
 
 #. module: om_account_check_printing
@@ -201,17 +205,6 @@ msgid "Cheque: %s"
 msgstr ""
 
 #. module: om_account_check_printing
-#: model:ir.model.fields,field_description:om_account_check_printing.field_account_setup_bank_manual_config__clearing_number
-#: model:ir.model.fields,field_description:om_account_check_printing.field_res_partner_bank__clearing_number
-msgid "Clearing Number"
-msgstr ""
-
-#. module: om_account_check_printing
-#: model:ir.model,name:om_account_check_printing.model_res_company
-msgid "Companies"
-msgstr ""
-
-#. module: om_account_check_printing
 #: model:ir.model.fields,field_description:om_account_check_printing.field_account_check_format__company_id
 msgid "Company"
 msgstr ""
@@ -224,6 +217,13 @@ msgstr ""
 #. module: om_account_check_printing
 #: model:ir.model.fields.selection,name:om_account_check_printing.selection__res_company__account_check_printing_layout__om_account_check_printing_action_report_check
 msgid "Configurable Cheque Format"
+msgstr ""
+
+#. module: om_account_check_printing
+#: model:ir.module.module,summary:base.module_om_account_check_printing
+msgid ""
+"Configurable cheque formats for printing the cheques of any bank in Odoo 20 "
+"Community"
 msgstr ""
 
 #. module: om_account_check_printing
@@ -307,6 +307,8 @@ msgstr ""
 #. module: om_account_check_printing
 #: model:ir.model.fields,field_description:om_account_check_printing.field_account_check_format__display_name
 #: model:ir.model.fields,field_description:om_account_check_printing.field_account_check_format_line__display_name
+#: model:ir.model.fields,field_description:om_account_check_printing.field_account_journal__display_name
+#: model:ir.model.fields,field_description:om_account_check_printing.field_ir_actions_report__display_name
 msgid "Display Name"
 msgstr ""
 
@@ -402,6 +404,7 @@ msgstr ""
 #. module: om_account_check_printing
 #: model:ir.model.fields,field_description:om_account_check_printing.field_account_check_format__id
 #: model:ir.model.fields,field_description:om_account_check_printing.field_account_check_format_line__id
+#: model:ir.model.fields,field_description:om_account_check_printing.field_ir_actions_report__id
 msgid "ID"
 msgstr ""
 
@@ -557,6 +560,11 @@ msgid "None"
 msgstr ""
 
 #. module: om_account_check_printing
+#: model:ir.module.module,shortdesc:base.module_om_account_check_printing
+msgid "Odoo 20 Cheque Printing"
+msgstr ""
+
+#. module: om_account_check_printing
 #: model:account.check.format,words_suffix:om_account_check_printing.check_format_gulf_leaf
 #: model:account.check.format,words_suffix:om_account_check_printing.check_format_leaf
 #: model:account.check.format,words_suffix:om_account_check_printing.check_format_uk_leaf
@@ -606,11 +614,6 @@ msgstr ""
 #. module: om_account_check_printing
 #: model_terms:ir.ui.view,arch_db:om_account_check_printing.check_pages
 msgid "Payment"
-msgstr ""
-
-#. module: om_account_check_printing
-#: model:ir.model,name:om_account_check_printing.model_account_payment
-msgid "Payments"
 msgstr ""
 
 #. module: om_account_check_printing
@@ -683,14 +686,6 @@ msgstr ""
 #. module: om_account_check_printing
 #: model:ir.model.fields,field_description:om_account_check_printing.field_account_check_format_line__rotation
 msgid "Rotation (°)"
-msgstr ""
-
-#. module: om_account_check_printing
-#: model:ir.model.fields,help:om_account_check_printing.field_account_setup_bank_manual_config__clearing_number
-#: model:ir.model.fields,help:om_account_check_printing.field_res_partner_bank__clearing_number
-msgid ""
-"Routing number of the bank (United States), or institution and transit "
-"number (Canada): printed in the MICR line of the cheques."
 msgstr ""
 
 #. module: om_account_check_printing

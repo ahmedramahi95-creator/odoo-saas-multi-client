@@ -4,16 +4,28 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 07:07+0000\n"
-"PO-Revision-Date: 2026-10-22 07:07+0000\n"
+"POT-Creation-Date: 2026-10-13 15:40+0000\n"
+"PO-Revision-Date: 2026-10-13 15:40+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: om_currency_revaluation
+#: model:ir.module.module,description:base.module_om_currency_revaluation
+msgid ""
+"\n"
+"Restate what is open in a foreign currency at the rate of a chosen date: the unpaid customer invoices, the unpaid\n"
+"vendor bills and the balances of the accounts held in a foreign currency, such as the bank accounts.\n"
+"\n"
+"The difference with the amounts in the books is posted as one adjustment entry, on an unrealized gain account and an\n"
+"unrealized loss account, and reversed at the start of the next period: nothing is gained or lost until the invoices\n"
+"are paid. Required by IAS 21 and by most local rules at the closing of a period.\n"
+msgstr ""
 
 #. module: om_currency_revaluation
 #: model:ir.model.fields,field_description:om_currency_revaluation.field_currency_revaluation_line__account_id
@@ -38,11 +50,6 @@ msgid "Cancel"
 msgstr ""
 
 #. module: om_currency_revaluation
-#: model:ir.model,name:om_currency_revaluation.model_res_company
-msgid "Companies"
-msgstr ""
-
-#. module: om_currency_revaluation
 #: model:ir.model.fields,field_description:om_currency_revaluation.field_currency_revaluation__company_id
 msgid "Company"
 msgstr ""
@@ -50,11 +57,6 @@ msgstr ""
 #. module: om_currency_revaluation
 #: model:ir.model.fields,field_description:om_currency_revaluation.field_currency_revaluation_line__company_currency_id
 msgid "Company Currency"
-msgstr ""
-
-#. module: om_currency_revaluation
-#: model:ir.model,name:om_currency_revaluation.model_res_config_settings
-msgid "Config Settings"
 msgstr ""
 
 #. module: om_currency_revaluation
@@ -110,8 +112,10 @@ msgid "Currency revaluation of %s"
 msgstr ""
 
 #. module: om_currency_revaluation
+#: model:ir.model.fields,field_description:om_currency_revaluation.field_account_move__display_name
 #: model:ir.model.fields,field_description:om_currency_revaluation.field_currency_revaluation__display_name
 #: model:ir.model.fields,field_description:om_currency_revaluation.field_currency_revaluation_line__display_name
+#: model:ir.model.fields,field_description:om_currency_revaluation.field_ir_module_module__display_name
 msgid "Display Name"
 msgstr ""
 
@@ -129,11 +133,6 @@ msgstr ""
 #. module: om_currency_revaluation
 #: model:ir.model.fields,field_description:om_currency_revaluation.field_currency_revaluation__journal_id
 msgid "Journal"
-msgstr ""
-
-#. module: om_currency_revaluation
-#: model:ir.model,name:om_currency_revaluation.model_account_move
-msgid "Journal Entry"
 msgstr ""
 
 #. module: om_currency_revaluation
@@ -163,6 +162,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_currency_revaluation/wizard/currency_revaluation.py:0
 msgid "Nothing is open in a foreign currency to revalue on this date."
+msgstr ""
+
+#. module: om_currency_revaluation
+#: model:ir.module.module,shortdesc:base.module_om_currency_revaluation
+msgid "Odoo 20 Currency Revaluation"
 msgstr ""
 
 #. module: om_currency_revaluation
@@ -212,6 +216,13 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_currency_revaluation/wizard/currency_revaluation.py:0
 msgid "Revaluation of %(amount)s at the rate of %(date)s"
+msgstr ""
+
+#. module: om_currency_revaluation
+#: model:ir.module.module,summary:base.module_om_currency_revaluation
+msgid ""
+"Revalue the open foreign currency balances at the closing rate, with "
+"unrealized gains and losses"
 msgstr ""
 
 #. module: om_currency_revaluation

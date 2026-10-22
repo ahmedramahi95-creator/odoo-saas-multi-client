@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -107,6 +107,17 @@ msgid "Cash Book Report"
 msgstr "Reporte de Libro de Efectivo"
 
 #. module: om_account_daily_reports
+#: model:ir.module.module,description:base.module_om_account_daily_reports
+#: model:ir.module.module,summary:base.module_om_account_daily_reports
+msgid "Cash Book, Day Book and Bank Book Report For Odoo 20"
+msgstr ""
+
+#. module: om_account_daily_reports
+#: model:ir.module.module,shortdesc:base.module_om_account_daily_reports
+msgid "Cash Book, Day Book, Bank Book Financial Reports"
+msgstr ""
+
+#. module: om_account_daily_reports
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_bankbook_report__create_uid
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_cashbook_report__create_uid
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_daybook_report__create_uid
@@ -179,6 +190,9 @@ msgstr "Mostrar Cuentas"
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_bankbook_report__display_name
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_cashbook_report__display_name
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_daybook_report__display_name
+#: model:ir.model.fields,field_description:om_account_daily_reports.field_report_om_account_daily_reports_report_bankbook__display_name
+#: model:ir.model.fields,field_description:om_account_daily_reports.field_report_om_account_daily_reports_report_cashbook__display_name
+#: model:ir.model.fields,field_description:om_account_daily_reports.field_report_om_account_daily_reports_report_daybook__display_name
 msgid "Display Name"
 msgstr "Nombre en pantalla"
 
@@ -215,6 +229,9 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_bankbook_report__id
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_cashbook_report__id
 #: model:ir.model.fields,field_description:om_account_daily_reports.field_account_daybook_report__id
+#: model:ir.model.fields,field_description:om_account_daily_reports.field_report_om_account_daily_reports_report_bankbook__id
+#: model:ir.model.fields,field_description:om_account_daily_reports.field_report_om_account_daily_reports_report_cashbook__id
+#: model:ir.model.fields,field_description:om_account_daily_reports.field_report_om_account_daily_reports_report_daybook__id
 msgid "ID"
 msgstr "ID"
 
@@ -285,16 +302,16 @@ msgstr "Movimiento"
 #. odoo-python
 #: code:addons/om_account_daily_reports/report/report_bankbook.py:0
 msgid ""
-"No bank account found: select the accounts to print or configure the "
-"accounts of your bank journals."
+"No bank account found: select the accounts to print or configure the payment"
+" accounts of your bank journals."
 msgstr ""
 
 #. module: om_account_daily_reports
 #. odoo-python
 #: code:addons/om_account_daily_reports/report/report_cashbook.py:0
 msgid ""
-"No cash account found: select the accounts to print or configure the "
-"accounts of your cash journals."
+"No cash account found: select the accounts to print or configure the payment"
+" accounts of your cash journals."
 msgstr ""
 
 #. module: om_account_daily_reports

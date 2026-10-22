@@ -1,4 +1,3 @@
-from . import models
 from . import om_whatsapp_account
 from . import om_whatsapp_template
 from . import mail_message

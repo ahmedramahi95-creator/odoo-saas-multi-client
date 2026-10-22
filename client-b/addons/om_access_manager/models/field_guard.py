@@ -1,6 +1,6 @@
 # Hidden and read-only fields, enforced only on the methods a client or script
 # calls itself, never from Python: Odoo 20 checks field access on every Python
-# read, so refusing them deeper would break business code.
+# read, so denying them in _has_field_access() would break business code.
 # Hidden values are blanked, not removed, so views referring to them keep working.
 # Which call a client made (_om_rpc_entry) is told by om_user_audit.
 import logging
@@ -8,9 +8,7 @@ import logging
 from dateutil.relativedelta import relativedelta
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError
-from odoo.fields import Command
-from odoo.osv import expression
+from odoo.fields import Command, Domain
 from odoo.tools.safe_eval import datetime, safe_eval, time
 
 from .conditions import condition_domain
@@ -107,6 +105,15 @@ class Base(models.AbstractModel):
             model = self.env[field.comodel_name]
 
     def _om_check_domain(self, rules, domain):
+        if isinstance(domain, Domain):
+            # a domain already parsed (the /json routes pass one)
+            for condition in domain.iter_conditions():
+                self._om_check_path(rules, condition.field_expr)
+                if isinstance(condition.value, Domain):
+                    comodel = self._om_comodel_of(condition.field_expr)
+                    if comodel is not None:
+                        comodel._om_check_domain(rules, condition.value)
+            return
         if not domain or not isinstance(domain, (list, tuple)):
             return
         for leaf in domain:
@@ -315,13 +322,13 @@ class Base(models.AbstractModel):
             for key in names_read(domain) - set(context):
                 if key in self._fields:
                     context[key] = values.get(key)
-            filtered = expression.normalize_domain(safe_eval(domain, context))
+            filtered = Domain(safe_eval(domain, context))
         except Exception:  # noqa: BLE001
             # a filter the server cannot evaluate on its own stays a filter of the dropdown
             _logger.debug("Value filter %r of %s.%s not checked", domain, self._name, name, exc_info=True)
             return
         comodel = self.env[field.comodel_name].sudo().with_context(active_test=False)
-        allowed = comodel.search(expression.AND([[('id', 'in', list(ids))], filtered])).ids
+        allowed = comodel.search(Domain('id', 'in', list(ids)) & filtered).ids
         if set(allowed) != set(ids):
             raise self.env['om.access.profile']._om_refusal(_(
                 "Your access profile does not allow this value for the field '%(field)s' of '%(model)s'.",
@@ -380,33 +387,72 @@ class Base(models.AbstractModel):
         return super().search_count(domain, limit=limit)
 
     @api.model
-    def web_read_group(self, domain, fields, groupby, limit=None, offset=0, orderby=False, lazy=True):
+    def formatted_read_group(self, domain, groupby=(), aggregates=(), having=(), offset=0, limit=None, order=None):
+        rules = self._om_rpc_entry('formatted_read_group') and self._om_field_rules()
+        if rules:
+            self._om_check_domain(rules, domain)
+            self._om_check_domain(rules, having)
+            self._om_check_specs(rules, groupby)
+            self._om_check_specs(rules, aggregates)
+            self._om_check_order(rules, order)
+        return super().formatted_read_group(
+            domain, groupby=groupby, aggregates=aggregates, having=having, offset=offset, limit=limit,
+            order=order)
+
+    @api.model
+    def web_read_group(self, domain, groupby, aggregates=(), limit=None, offset=0, order=None, **kwargs):
         rules = self._om_rpc_entry('web_read_group') and self._om_field_rules()
         if rules:
             self._om_check_domain(rules, domain)
-            self._om_check_specs(rules, [groupby] if isinstance(groupby, str) else groupby)
-            self._om_check_specs(rules, fields)
-            self._om_check_order(rules, orderby)
-        return super().web_read_group(domain, fields, groupby, limit=limit, offset=offset, orderby=orderby,
-                                      lazy=lazy)
+            self._om_check_specs(rules, groupby)
+            self._om_check_specs(rules, aggregates)
+            self._om_check_order(rules, order)
+        result = super().web_read_group(
+            domain, groupby, aggregates=aggregates, limit=limit, offset=offset, order=order, **kwargs)
+        if rules:
+            specification = kwargs.get('unfold_read_specification') or {}
+            stack = list(result.get('groups', []))
+            groupby_specs = kwargs.get('groupby_read_specification') or {}
+            while stack:
+                group = stack.pop()
+                self._om_blank(rules, group.get('__records', []), specification)
+                # the values read for a grouped relation (groupby_read_specification)
+                if isinstance(group.get('__values'), dict):
+                    for name, spec in groupby_specs.items():
+                        field = self._fields.get(name)
+                        if field is not None and field.relational:
+                            self.env[field.comodel_name]._om_blank(rules, [group['__values']], spec)
+                stack.extend(group.get('__groups', {}).get('groups', [])
+                             if isinstance(group.get('__groups'), dict) else group.get('__groups', []))
+        return result
 
     @api.model
-    def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
+    def read_group(self, domain, groupby=(), aggregates=(), having=(), offset=0, limit=None, order=None):
         rules = self._om_rpc_entry('read_group') and self._om_field_rules()
         if rules:
             self._om_check_domain(rules, domain)
-            self._om_check_specs(rules, [groupby] if isinstance(groupby, str) else groupby)
-            self._om_check_specs(rules, fields)
-            self._om_check_order(rules, orderby)
-        return super().read_group(domain, fields, groupby, offset=offset, limit=limit, orderby=orderby,
-                                  lazy=lazy)
+            self._om_check_domain(rules, having)
+            self._om_check_specs(rules, groupby)
+            self._om_check_specs(rules, aggregates)
+            self._om_check_order(rules, order)
+        return super().read_group(
+            domain, groupby=groupby, aggregates=aggregates, having=having, offset=offset, limit=limit,
+            order=order)
 
     @api.model
-    def name_search(self, name='', args=None, operator='ilike', limit=100):
+    def web_name_search(self, name, specification, domain=None, operator='ilike', limit=100):
+        rules = self._om_rpc_entry('web_name_search') and self._om_field_rules()
+        if rules:
+            self._om_check_domain(rules, domain)
+        result = super().web_name_search(name, specification, domain=domain, operator=operator, limit=limit)
+        return self._om_blank(rules, result, specification) if rules else result
+
+    @api.model
+    def name_search(self, name='', domain=None, operator='ilike', limit=100):
         rules = self._om_rpc_entry('name_search') and self._om_field_rules()
         if rules:
-            self._om_check_domain(rules, args)
-        return super().name_search(name, args=args, operator=operator, limit=limit)
+            self._om_check_domain(rules, domain)
+        return super().name_search(name, domain=domain, operator=operator, limit=limit)
 
     def export_data(self, fields_to_export):
         rules = self._om_rpc_entry('export_data') and self._om_field_rules()
@@ -440,6 +486,17 @@ class Base(models.AbstractModel):
             self._om_check_specs(rules, [group_by, (progress_bar or {}).get('field') or '',
                                          (progress_bar or {}).get('sum_field') or ''])
         return super().read_progress_bar(domain, group_by, progress_bar)
+
+    @api.model
+    def formatted_read_grouping_sets(self, domain, grouping_sets, aggregates=(), **kwargs):
+        rules = self._om_rpc_entry('formatted_read_grouping_sets') and self._om_field_rules()
+        if rules:
+            self._om_check_domain(rules, domain)
+            for grouping_set in grouping_sets or ():
+                self._om_check_specs(rules, grouping_set)
+            self._om_check_specs(rules, aggregates)
+            self._om_check_order(rules, kwargs.get('order'))
+        return super().formatted_read_grouping_sets(domain, grouping_sets, aggregates=aggregates, **kwargs)
 
     def _om_check_search_panel(self, method, field_name, kwargs):
         rules = self._om_rpc_entry(method) and self._om_field_rules()
@@ -477,6 +534,21 @@ class Base(models.AbstractModel):
             self._om_check_path(rules, field_name)
         return super().get_field_translations(field_name, langs=langs)
 
+    def web_resequence(self, specification, field_name='sequence', offset=0):
+        rules = self._om_rpc_entry('web_resequence') and self._om_field_rules()
+        if rules and field_name in self._om_locked(rules, self._name):
+            self._om_refuse(self._name, field_name)
+        result = super().web_resequence(specification, field_name=field_name, offset=offset)
+        return self._om_blank(rules, result, specification) if rules else result
+
+    def onchange_batch(self, values_list, field_names, fields_spec):
+        rules = self._om_rpc_entry('onchange_batch') and self._om_field_rules()
+        result = super().onchange_batch(values_list, field_names, fields_spec)
+        if rules:
+            self._om_blank(rules, [item.get('value') for item in result
+                                   if isinstance(item, dict) and isinstance(item.get('value'), dict)], fields_spec)
+        return result
+
     @api.model
     def load(self, fields, data):
         rules = self._om_rpc_entry('load') and self._om_field_rules()
@@ -502,6 +574,17 @@ class Base(models.AbstractModel):
             if field is None or not field.relational:
                 return
             model = self.env[field.comodel_name]
+
+    @api.model
+    def _has_field_access(self, field, operation):
+        # /web/content and /web/image only ask this. Limited to binary fields:
+        # Odoo's own code reads the other types as the user.
+        if (operation == 'read' and field.type in ('binary', 'image') and not self.env.su
+                and super()._has_field_access(field, operation)):
+            rules = self.env['om.access.profile']._current_rules()
+            if rules.enabled and field.name in self._om_hidden(rules, self._name):
+                return False
+        return super()._has_field_access(field, operation)
 
     @api.model
     def fields_get(self, allfields=None, attributes=None):
@@ -561,18 +644,3 @@ class Base(models.AbstractModel):
         if rules:
             vals_list = [self._om_drop_locked(rules, vals) for vals in vals_list]
         return super().create(vals_list)
-
-
-class IrBinary(models.AbstractModel):
-    _inherit = 'ir.binary'
-
-    def _find_record_check_access(self, record, access_token, field):
-        # /web/content and /web/image: a hidden file or image is refused.
-        # Limited to binary fields: Odoo's own code reads the other types as the user.
-        record = super()._find_record_check_access(record, access_token, field)
-        model_field = field and record._fields.get(field)
-        if model_field is not None and model_field.type in ('binary', 'image') and not record.env.su:
-            rules = record.env['om.access.profile']._current_rules()
-            if rules.enabled and field in record._om_hidden(rules, record._name):
-                raise AccessError(_("Your access profile hides this file."))
-        return record

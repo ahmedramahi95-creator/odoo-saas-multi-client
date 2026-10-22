@@ -165,7 +165,7 @@ class TestDailyBooks(AccountTestInvoicingCommon):
 
     def test_the_currency_column_is_formatted_money(self):
         """ It used to print the raw float, so 1234.5 landed on the page as ``1234.5``. """
-        self.env.user.groups_id += self.env.ref('base.group_multi_currency')
+        self.env.user.group_ids += self.env.ref('base.group_multi_currency')
         bank_journal = self.company_data['default_journal_bank']
         bank = bank_journal.default_account_id
         revenue = self.company_data['default_account_revenue']

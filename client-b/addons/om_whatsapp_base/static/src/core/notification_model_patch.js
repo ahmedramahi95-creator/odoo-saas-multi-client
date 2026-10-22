@@ -11,17 +11,17 @@ patch(Notification.prototype, {
         if (this.isWhatsapp && this.failure_reason) {
             return this.failure_reason;
         }
-        return super.failureMessage ?? "";
+        return super.failureMessage;
     },
     get icon() {
-        return this.isWhatsapp && !this.isFailure ? "fa fa-whatsapp" : super.icon;
+        return this.isWhatsapp && !this.isFailure ? "oi_whatsapp" : super.icon;
     },
     get label() {
         return this.isWhatsapp ? _t("WhatsApp") : super.label;
     },
     get statusIcon() {
         if (this.isWhatsapp && ["pending", "sent"].includes(this.notification_status)) {
-            return "fa fa-check";
+            return "check";
         }
         return super.statusIcon;
     },

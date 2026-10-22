@@ -51,10 +51,10 @@ class OmAccessProfileField(models.Model):
         help="Restricts the values the dropdown offers, and refuses another "
              "value when the record is saved. Relational fields only.")
 
-    _sql_constraints = [
-        ('unique_field', 'UNIQUE(profile_id, field_id)',
-         'A profile can only carry one rule per field.'),
-    ]
+    _unique_field = models.Constraint(
+        'UNIQUE(profile_id, field_id)',
+        'A profile can only carry one rule per field.',
+    )
 
     @api.onchange('model_id')
     def _onchange_model_id(self):

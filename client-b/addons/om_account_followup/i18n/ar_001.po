@@ -1185,7 +1185,7 @@ msgstr ""
 #: model:mail.template,subject:om_account_followup.email_template_om_account_followup_level0
 #: model:mail.template,subject:om_account_followup.email_template_om_account_followup_level1
 #: model:mail.template,subject:om_account_followup.email_template_om_account_followup_level2
-msgid "{{ user.env.company.name }} Payment Reminder"
+msgid "{{ env.company.name }} Payment Reminder"
 msgstr ""
 
 #. module: om_account_followup

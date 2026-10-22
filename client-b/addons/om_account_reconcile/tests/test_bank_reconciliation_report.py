@@ -12,7 +12,7 @@ class TestBankReconciliationReport(AccountTestInvoicingCommon):
         super().setUpClass()
         cls.bank_journal = cls.company_data['default_journal_bank']
         cls.env.company.om_reconcile_auto = False
-        # Odoo 18 only writes a journal entry for a payment that has an outstanding
+        # Odoo 20 only writes a journal entry for a payment that has an outstanding
         # account, and the report is about exactly those accounts, so they are set here
         cls.receipts = cls.env['account.account'].create({
             'code': 'OUTREC', 'name': 'Outstanding Receipts', 'account_type': 'asset_current',

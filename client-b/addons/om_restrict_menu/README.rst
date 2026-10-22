@@ -2,7 +2,7 @@
 Hide Menus by User and Company
 ==============================
 
-This module hides any menu or app of Odoo 18 for a user, or for every user while a company is the
+This module hides any menu or app of Odoo 20 for a user, or for every user while a company is the
 current company.
 
 Features

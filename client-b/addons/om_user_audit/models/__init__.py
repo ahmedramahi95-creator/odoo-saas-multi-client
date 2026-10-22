@@ -1,5 +1,4 @@
 from . import client_call
-from . import ir_config_parameter
 from . import om_user_audit_log
 from . import om_user_audit_rule
 from . import base

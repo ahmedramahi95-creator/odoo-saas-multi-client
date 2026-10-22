@@ -218,7 +218,7 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
 
     def test_writeoff_model(self):
         model = self.env['account.reconcile.model'].create({
-            'name': 'Bank fees', 'rule_type': 'writeoff_button', 'match_label': 'contains', 'match_label_param': 'FEE',
+            'name': 'Bank fees', 'rule_type': 'reco_model', 'match_label': 'contains', 'match_label_param': 'FEE',
             'line_ids': [Command.create({
                 'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
         })
@@ -231,26 +231,9 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
             st_line.move_id.line_ids.filtered(lambda line: line.account_id == self.expense_account).reconcile_model_id,
             model)
 
-    def test_automatic_models_of_odoo_18(self):
-        """ Only the models validated automatically are applied on their own, a button never; a model to check
-        leaves the entry to check. """
-        button = self.env['account.reconcile.model'].create({
-            'name': 'Fee button', 'rule_type': 'writeoff_button', 'auto_reconcile': True,
-            'match_label': 'contains', 'match_label_param': 'FEE',
-            'line_ids': [Command.create({
-                'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
-        })
-        st_line = self._transaction(-20.0, label='monthly fee', partner=False)
-        self.assertFalse(st_line._om_auto_reconcile())
-
-        button.rule_type = 'writeoff_suggestion'
-        button.to_check = True
-        self.assertEqual(st_line._om_auto_reconcile(), st_line)
-        self.assertFalse(st_line.move_id.checked)
-
     def test_regex_and_fixed_amounts(self):
         model = self.env['account.reconcile.model'].create({
-            'name': 'Commission', 'rule_type': 'writeoff_button',
+            'name': 'Commission', 'rule_type': 'reco_model',
             'line_ids': [
                 Command.create({'account_id': self.expense_account.id, 'amount_type': 'regex',
                                 'amount_string': r'COM ([\d,]+)'}),
@@ -263,11 +246,14 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
 
     def test_partner_mapping_and_matching_rule(self):
         partner = self.partner_b
-        # Odoo 18: the partner comes from the partner mapping lines of the matching rule
         self.env['account.reconcile.model'].create({
-            'name': 'Invoices with 2% tolerance', 'rule_type': 'invoice_matching', 'auto_reconcile': True,
-            'allow_payment_tolerance': True, 'payment_tolerance_param': 2.0, 'payment_tolerance_type': 'percentage',
-            'partner_mapping_line_ids': [Command.create({'partner_id': partner.id, 'payment_ref_regex': 'ACME'})],
+            'name': 'ACME mapping', 'rule_type': 'reco_model', 'trigger': 'manual',
+            'match_label': 'contains', 'match_label_param': 'ACME',
+            'line_ids': [Command.create({'partner_id': partner.id, 'amount_string': '100'})],
+        })
+        self.env['account.reconcile.model'].create({
+            'name': 'Invoices with 2% tolerance', 'rule_type': 'matching_rule',
+            'payment_tolerance': 2.0, 'payment_tolerance_type': 'percentage',
             'line_ids': [Command.create({
                 'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
         })
@@ -347,7 +333,7 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
     def test_screen_api(self):
         invoice = self._invoice(400.0)
         fee_model = self.env['account.reconcile.model'].create({
-            'name': 'Fee', 'rule_type': 'writeoff_button',
+            'name': 'Fee', 'rule_type': 'reco_model',
             'line_ids': [Command.create({
                 'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
         })

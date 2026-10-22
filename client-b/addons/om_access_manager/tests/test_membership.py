@@ -31,22 +31,22 @@ class TestMembership(TransactionCase):
     def test_a_group_member_carries_the_profile(self):
         self.profile.group_ids = self.group
         self.assertFalse(self._rules(self.user).enabled)
-        self.user.write({'groups_id': [(4, self.group.id)]})
+        self.user.write({'group_ids': [(4, self.group.id)]})
         self.assertTrue(self._rules(self.user).has_flag('hide_activities'))
         self.assertIn(self.user, self.profile._om_members())
-        self.user.write({'groups_id': [(3, self.group.id)]})
+        self.user.write({'group_ids': [(3, self.group.id)]})
         self.assertFalse(self._rules(self.user).enabled)
         # from the group's side
-        self.group.write({'users': [(4, self.other.id)]})
+        self.group.write({'user_ids': [(4, self.other.id)]})
         self.assertTrue(self._rules(self.other).enabled)
-        self.group.write({'users': [(3, self.other.id)]})
+        self.group.write({'user_ids': [(3, self.other.id)]})
         self.assertFalse(self._rules(self.other).enabled)
 
     def test_a_group_implying_the_profile_group(self):
         self.profile.group_ids = self.group
         manager = self.env['res.groups'].create({'name': 'OM Access Manager Group',
                                                  'implied_ids': [(4, self.group.id)]})
-        self.user.write({'groups_id': [(4, manager.id)]})
+        self.user.write({'group_ids': [(4, manager.id)]})
         self.assertTrue(self._rules(self.user).enabled)
 
     def test_the_group_of_a_profile_cannot_give_another(self):
@@ -67,13 +67,13 @@ class TestMembership(TransactionCase):
             self.assertEqual(line.state, 'active')
             self.assertTrue(self._rules(self.user).enabled)
             # the menus are cached per group set: the user joins the profile's group
-            self.assertIn(self.user, self.profile.group_id.users)
+            self.assertIn(self.user, self.profile.group_id.user_ids)
             self.assertEqual(self.profile.user_count, 1)
         with freeze_time(today + timedelta(days=3)):
             self.env['om.access.profile.assignment']._cron_refresh()
             self.assertEqual((line.state, line.active), ('ended', False))
             self.assertFalse(self._rules(self.user).enabled)
-            self.assertNotIn(self.user, self.profile.group_id.users)
+            self.assertNotIn(self.user, self.profile.group_id.user_ids)
             self.assertIn(line, self.profile.assignment_ids)
 
     def test_an_assignment_cannot_end_before_it_starts(self):
@@ -100,14 +100,14 @@ class TestMembership(TransactionCase):
         self.assertEqual(self.other.access_profile_ids, self.profile)
         self.assertEqual(self.other.access_assignment_ids.note, 'leave')
         self.assertTrue(self._rules(self.other).enabled)
-        self.assertIn(self.other, self.profile.group_id.users)
+        self.assertIn(self.other, self.profile.group_id.user_ids)
         # a job change: the access moves
         third = new_test_user(self.env, 'om_access_member_third', groups='base.group_user')
         Wizard.create({'user_ids': [(6, 0, third.ids)], 'mode': 'move'}).action_apply()
         self.assertEqual(third.access_profile_ids, self.profile)
         self.assertFalse(self.user.access_profile_ids)
         self.assertFalse(self.user.access_assignment_ids)
-        self.assertNotIn(self.user, self.profile.group_id.users)
+        self.assertNotIn(self.user, self.profile.group_id.user_ids)
         self.assertFalse(self._rules(self.user).enabled)
 
     def test_export_carries_groups_and_conditions(self):

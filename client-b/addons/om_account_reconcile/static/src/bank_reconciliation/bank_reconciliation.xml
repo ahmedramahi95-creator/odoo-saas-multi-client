@@ -4,13 +4,13 @@
     <t t-name="om_account_reconcile.BankReconciliation">
         <div class="o_action o_om_bank_rec">
             <ControlPanel>
-                <t t-set-slot="layout-buttons">
+                <t t-set-slot="control-panel-buttons">
                     <button class="btn btn-secondary o_om_bank_rec_auto" t-att-disabled="this.state.busy"
                             t-on-click="() => this.autoReconcile()">
                         Auto-reconcile
                     </button>
                 </t>
-                <t t-set-slot="layout-actions">
+                <t t-set-slot="control-panel-actions">
                     <div class="d-flex flex-wrap align-items-center gap-2">
                         <div class="btn-group" role="group">
                             <button t-foreach="[['bank', 'Bank'], ['open_items', 'Open Items']]"
@@ -399,7 +399,7 @@
                                 <td>
                                     <button class="btn btn-link btn-sm px-0" title="Open the entry"
                                             t-on-click="() => this.openItemMove(item)">
-                                        <i class="fa fa-external-link"/>
+                                        <i class="oi" data-icon="open_in_new"/>
                                     </button>
                                 </td>
                             </tr>

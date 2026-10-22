@@ -33,7 +33,7 @@ class TestDashboardInBrowser(AccountTestInvoicingHttpCommon):
     def _accountant_admin(self):
         self.env.ref('base.user_admin').write({
             'company_id': self.env.company.id, 'company_ids': [Command.set(self.env.company.ids)],
-            'groups_id': [Command.link(self.env.ref('account.group_account_user').id),
+            'group_ids': [Command.link(self.env.ref('account.group_account_user').id),
                           Command.link(self.env.ref('account.group_account_manager').id)],
         })
 
@@ -58,4 +58,4 @@ class TestDashboardInBrowser(AccountTestInvoicingHttpCommon):
             'method_number': 12, 'method_period': 1,
         }).validate()
         # the gross value and the number of running assets
-        check_dashboards(self, ['Assets'], expected={'Assets': {'Data!B1': 1200, 'Data!B5': 1}})
+        check_dashboards(self, ['Assets'], expected={'Assets': {'Data!B1': 1200, 'Data!B6': 1}})

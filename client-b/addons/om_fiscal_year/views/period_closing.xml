@@ -70,11 +70,11 @@
                                     <field name="status" widget="badge" decoration-danger="status == 'blocking'"
                                            decoration-warning="status in ('warning', 'todo')"
                                            decoration-success="status in ('ok', 'done')"/>
-                                    <button name="action_open" type="object" string="Open" icon="fa-external-link"
+                                    <button name="action_open" type="object" string="Open" icon="open_in_new"
                                             invisible="is_manual or not count"/>
-                                    <button name="action_mark_done" type="object" string="Done" icon="fa-check"
+                                    <button name="action_mark_done" type="object" string="Done" icon="check"
                                             invisible="not is_manual or status == 'done'"/>
-                                    <button name="action_mark_todo" type="object" string="Undo" icon="fa-undo"
+                                    <button name="action_mark_todo" type="object" string="Undo" icon="undo"
                                             invisible="not is_manual or status != 'done'"/>
                                 </list>
                             </field>
@@ -140,7 +140,7 @@
     <menuitem id="menu_account_period_closing"
               name="Period Closing"
               sequence="5"
-              parent="menu_account_closing"
+              parent="account.account_closing_menu"
               action="action_account_period_closing"
               groups="account.group_account_user,account.group_account_manager"/>
 

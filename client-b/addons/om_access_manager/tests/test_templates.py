@@ -48,7 +48,7 @@ class TestTemplates(TransactionCase):
     def test_a_template_for_any_app(self):
         profile = self._create('app_readonly', app_id=self.discuss, user_ids=self.user)
         self.assertEqual(profile.name, 'Discuss: App Read Only')
-        Channel = self.env['mail.canned.response'].with_user(self.user).browse()
+        Channel = self.env['discuss.channel'].with_user(self.user).browse()
         self.assertTrue(Channel.has_access('read'))
         self.assertFalse(Channel.has_access('write'))
 

@@ -3,6 +3,7 @@ import time
 
 from odoo import SUPERUSER_ID, api, models
 from odoo.http import request
+from odoo.http.session import logout
 
 SEEN_KEY = 'om_user_audit_seen'
 # the session is saved at most this often to note the last request
@@ -27,7 +28,7 @@ class IrHttp(models.AbstractModel):
         seen = request.session.get(SEEN_KEY)
         if minutes > 0 and seen and now - seen > minutes * 60:
             env['om.user.audit.log']._om_log('session_end', separate=True, user_id=uid, detail='idle')
-            request.session.logout(keep_db=True)
+            logout(request.session, keep_db=True)
             request.env = api.Environment(request.env.cr, None, request.env.context)
             return
         if not seen or now - seen > SEEN_PRECISION:

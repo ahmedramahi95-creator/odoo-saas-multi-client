@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -13,6 +13,17 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,description:base.module_om_account_bank_statement_import
+msgid ""
+"\n"
+"Import the statements your bank gives you, in the format it offers: CAMT.053 (ISO 20022), MT940 (SWIFT), OFX or\n"
+"QFX, QIF, and CSV or Excel with a map of the columns of your bank, which is kept for the next import.\n"
+"\n"
+"The journal is recognised from the account number in the file, the transactions already imported are skipped, and\n"
+"the file stays attached to the statement. The statements are then reconciled as usual.\n"
+msgstr ""
 
 #. module: om_account_bank_statement_import
 #. odoo-python
@@ -152,6 +163,8 @@ msgid "Describe the file of your bank"
 msgstr ""
 
 #. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_bank_statement_line__display_name
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__display_name
 #: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__display_name
 #: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__display_name
 msgid "Display Name"
@@ -204,6 +217,8 @@ msgid "Has a Header Row"
 msgstr ""
 
 #. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_bank_statement_line__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__id
 #: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__id
 #: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__id
 msgid "ID"
@@ -234,6 +249,13 @@ msgstr "ID de importación"
 #: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_bank_statement_tree
 msgid "Import Statement"
 msgstr "Importar extracto"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,summary:base.module_om_account_bank_statement_import
+msgid ""
+"Import the bank statements of your bank: CAMT, MT940, OFX, QIF, CSV and "
+"Excel"
+msgstr ""
 
 #. module: om_account_bank_statement_import
 #: model:ir.model,name:om_account_bank_statement_import.model_account_journal
@@ -298,6 +320,11 @@ msgstr "Notas"
 #. module: om_account_bank_statement_import
 #: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_narration
 msgid "Notes Column"
+msgstr ""
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,shortdesc:base.module_om_account_bank_statement_import
+msgid "Odoo 20 Bank Statement Import"
 msgstr ""
 
 #. module: om_account_bank_statement_import

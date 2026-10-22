@@ -41,10 +41,10 @@ class OmAccessProfileElement(models.Model):
              "only one per view.")
     element_label = fields.Char(string='Label')
 
-    _sql_constraints = [
-        ('unique_element', 'UNIQUE(profile_id, model_id, element_type, element_name)',
-         'A profile can only carry one rule per view element.'),
-    ]
+    _unique_element = models.Constraint(
+        'UNIQUE(profile_id, model_id, element_type, element_name)',
+        'A profile can only carry one rule per view element.',
+    )
 
     @api.constrains('element_type', 'condition')
     def _check_condition_type(self):

@@ -4,7 +4,6 @@ from freezegun import freeze_time
 
 from odoo import Command
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools import mute_logger
 from odoo.tests import Form, new_test_user, tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
@@ -21,12 +20,13 @@ class TestFollowupScreen(AccountTestInvoicingCommon):
         cls.company = cls.env.company
         cls.company.external_report_layout_id = cls.env.ref('web.external_layout_standard')
         cls.customer = cls.env['res.partner'].create({'name': 'Late Payer', 'email': 'late.payer@example.com'})
-        # one plan per company: the one the company got when it was created
-        cls.plan = cls.env['followup.followup']._get_default_plan(cls.company)
-        cls.plan.write({'followup_line': [Command.clear()] + [
-            Command.create({'name': 'First reminder', 'delay': 10, 'send_email': True, 'send_letter': False}),
-            Command.create({'name': 'Second reminder', 'delay': 30, 'send_email': True, 'send_letter': True}),
-        ]})
+        cls.plan = cls.env['followup.followup'].create({
+            'name': 'Standard', 'company_id': cls.company.id, 'is_default': True,
+            'followup_line': [
+                Command.create({'name': 'First reminder', 'delay': 10, 'send_email': True, 'send_letter': False}),
+                Command.create({'name': 'Second reminder', 'delay': 30, 'send_email': True, 'send_letter': True}),
+            ],
+        })
         cls.first, cls.second = cls.plan._get_levels()
 
     def _invoice(self, due_date, amount=1000.0, partner=None):
@@ -106,17 +106,30 @@ class TestFollowupScreen(AccountTestInvoicingCommon):
             'om_account_followup.report_customer_statement', self.customer.ids)[0].decode()
         self.assertIn('Disputed', html, 'the statement lists the disputed invoice, flagged')
 
-    def test_one_plan_per_company(self):
-        self.assertEqual(self.plan.name, self.company.name)
-        with self.assertRaises(Exception), mute_logger('odoo.sql_db'):
-            with self.env.cr.savepoint():
-                self.env['followup.followup'].create({'company_id': self.company.id})
+    def test_plan_of_the_customer(self):
+        strict = self.env['followup.followup'].create({
+            'name': 'Strict', 'company_id': self.company.id,
+            'followup_line': [Command.create({'name': 'Immediate', 'delay': 1, 'send_email': True})],
+        })
+        self.assertTrue(self.plan.is_default)
+        self.assertFalse(strict.is_default)
         self._invoice('2026-02-25')
         self.env.invalidate_all()
-        self.assertEqual(self.customer._followup_plan(), self.plan)
-        wizard = self.env['followup.print'].create({'date': '2026-03-10', 'followup_id': self.plan.id})
-        self.assertEqual(wizard.followup_id, self.plan)
+        self.assertEqual(self.customer.followup_status, 'with_overdue_invoices')
+        self.customer.followup_plan_id = strict
+        self.env.invalidate_all()
+        self.assertEqual(self.customer.followup_level_due_id.name, 'Immediate')
+        self.assertEqual(strict.partner_count, 1)
+        # the batch processing of a plan only sends to its customers
+        wizard = self.env['followup.print'].create({'date': '2026-03-01', 'followup_id': self.plan.id})
+        self.assertFalse(wizard._get_partners_followp()['partner_ids'])
+        wizard = self.env['followup.print'].create({'date': '2026-03-01', 'followup_id': strict.id})
         self.assertTrue(wizard._get_partners_followp()['partner_ids'])
+
+        strict.is_default = True
+        self.assertFalse(self.plan.is_default, 'one default plan per company')
+        with self.assertRaises(ValidationError):
+            self.env['followup.followup'].search([('company_id', '=', self.company.id)]).write({'is_default': True})
 
     def test_send_reminder_dialog(self):
         invoice = self._invoice('2026-02-01', amount=1234.5)
@@ -169,6 +182,7 @@ class TestFollowupScreen(AccountTestInvoicingCommon):
         company = self.env['res.company'].create({'name': 'Fresh Company'})
         plan = self.env['followup.followup']._get_default_plan(company)
         self.assertEqual(plan.name, 'Fresh Company')
+        self.assertTrue(plan.is_default)
         self.assertEqual(plan._get_levels().filtered('manual_action').name, 'Final notice')
 
     def test_billing_user_reads_the_screen(self):

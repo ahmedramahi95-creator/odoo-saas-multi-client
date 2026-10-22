@@ -87,14 +87,6 @@
         </field>
     </record>
 
-    <!-- the folder the recurring payments used to be in, empty now and so not shown: kept for the
-         modules that put their own menus in it -->
-    <menuitem id="menu_recurring_payments"
-              name="Recurring Payment"
-              sequence="10"
-              groups="account.group_account_user,account.group_account_manager"
-              parent="account.menu_finance_configuration"/>
-
     <menuitem id="menu_recurring_template"
               name="Recurring Templates"
               sequence="140"

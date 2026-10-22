@@ -26,9 +26,7 @@ class TestFollowup(AccountTestInvoicingCommon):
             'email': 'late.payer@example.com',
         })
         # levels are created in reverse order so that record ids and delays disagree
-        # one plan per company: the one the company got when it was created
-        cls.plan = cls.env['followup.followup']._get_default_plan(cls.company)
-        cls.plan.followup_line.unlink()
+        cls.plan = cls.env['followup.followup'].create({'company_id': cls.company.id, 'is_default': True})
         FollowupLine = cls.env['followup.line']
         cls.level_30 = FollowupLine.create({
             'name': 'Second reminder', 'delay': 30, 'followup_id': cls.plan.id,
@@ -40,15 +38,10 @@ class TestFollowup(AccountTestInvoicingCommon):
         })
 
     def _create_customer_invoice(self, invoice_date, amount=1000.0, company=None):
-        invoice = self.init_invoice(
+        return self.init_invoice(
             'out_invoice', partner=self.customer, invoice_date=invoice_date,
-            amounts=[amount], company=company,
+            amounts=[amount], company=company, post=True,
         )
-        # due on its date: the invoice form of the tests of 19.0 leaves the due date on today
-        invoice.invoice_payment_term_id = False
-        invoice.invoice_date_due = invoice_date
-        invoice.action_post()
-        return invoice
 
     def _receivable_line(self, invoice):
         return invoice.line_ids.filtered(lambda l: l.account_id.account_type == 'asset_receivable')
@@ -56,13 +49,6 @@ class TestFollowup(AccountTestInvoicingCommon):
     def _stat_line(self):
         stat = self.env['followup.stat.by.partner']
         return stat.browse(stat._get_stat_id(self.customer.id, self.company.id))
-
-    def _reminders_emailed(self):
-        """ The reminders posted on the customer and emailed to it. A test of 18 sends the emails at once and
-        deletes them: the message is checked, not the mail.mail. """
-        return self.customer.message_ids.filtered(
-            lambda message: message.message_type == 'comment'
-            and 'email' in message.notification_ids.mapped('notification_type'))
 
     def _run_wizard(self, run_date):
         wizard = self.env['followup.print'].create({'date': run_date, 'followup_id': self.plan.id})
@@ -76,7 +62,9 @@ class TestFollowup(AccountTestInvoicingCommon):
         self.assertEqual(self._stat_line().max_followup_id, self.level_15)
         self.assertTrue(action['context']['needprinting'])
         self.assertIn('1 email(s) sent', action['context']['description'])
-        self.assertTrue(self._reminders_emailed())
+        self.assertTrue(self.env['mail.mail'].search([
+            ('model', '=', 'res.partner'), ('res_id', '=', self.customer.id),
+        ]))
 
         self.env.invalidate_all()
         self._run_wizard('2026-02-15')
@@ -245,14 +233,15 @@ class TestFollowup(AccountTestInvoicingCommon):
         self.assertNotEqual(self.env.user.company_id, company_2)
         # a new company gets a plan of its own
         plan_2 = self.env['followup.followup']._get_default_plan(company_2)
-        self.assertEqual(plan_2.company_id, company_2)
+        self.assertTrue(plan_2.is_default)
         self.assertEqual(plan_2._get_levels().mapped('delay'), [7, 21, 45])
         self._create_customer_invoice('2026-01-01', company=company_2)
 
         self.env['followup.print'].with_company(company_2).create({
             'date': '2026-01-20', 'followup_id': plan_2.id,
         }).do_process()
-        self.assertEqual(self._reminders_emailed().subject, '%s Payment Reminder' % company_2.name)
+        mail = self.env['mail.mail'].search([('model', '=', 'res.partner'), ('res_id', '=', self.customer.id)])
+        self.assertEqual(mail.subject, '%s Payment Reminder' % company_2.name)
 
     def test_translations_are_loaded(self):
         self.env['res.lang']._activate_lang('fr_FR')
@@ -265,7 +254,7 @@ class TestFollowup(AccountTestInvoicingCommon):
         self.assertIn('1 e-mail(s) envoyé(s)', wizard.do_process()['context']['description'])
         subject = self.env.ref(
             'om_account_followup.email_template_om_account_followup_default').with_context(lang='fr_FR').subject
-        self.assertEqual(subject, '{{ user.env.company.name }}  Rappel de paiement')
+        self.assertEqual(subject, '{{ env.company.name }}  Rappel de paiement')
 
     def test_daily_automatic_sending(self):
         self._create_customer_invoice('2026-01-01')
@@ -282,7 +271,7 @@ class TestFollowup(AccountTestInvoicingCommon):
         with freeze_time('2026-01-25'):
             cron_model._cron_send_followups()
         self.assertEqual(self._receivable_line(self.customer.invoice_ids).followup_line_id, self.level_15)
-        mail = self._reminders_emailed()
+        mail = self.env['mail.mail'].search([('model', '=', 'res.partner'), ('res_id', '=', self.customer.id)])
         self.assertTrue(mail)
         self.assertIn('sender@example.com', mail.email_from)
         # automatic runs do not announce letters nobody prints

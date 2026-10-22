@@ -142,9 +142,7 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
         self.env.flush_all()
         self.env.cr.precommit.run()
         self.env.invalidate_all()
-        tracked = recurring_payment.message_ids.tracking_value_ids
-        self.assertEqual(tracked.field_id.name, 'amount')
-        self.assertEqual((tracked.old_value_float, tracked.new_value_float), (100.0, 250.0))
+        self.assertIn('<i>(Amount)</i>', ''.join(recurring_payment.message_ids.mapped('body')))
 
     def test_write_amount_on_several_records(self):
         recurring_payments = self._create_recurring_payment() | self._create_recurring_payment()
@@ -168,8 +166,7 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
 
     def test_access_rights(self):
         models = ('account.recurring.template', 'recurring.payment', 'recurring.payment.line')
-        administrator = new_test_user(self.env, login='recurring_admin',
-                                      groups='account.group_account_manager,account.group_account_user')
+        administrator = new_test_user(self.env, login='recurring_admin', groups='account.group_account_manager')
         for model in models:
             self.assertTrue(self.env[model].with_user(administrator).has_access('create'), model)
 

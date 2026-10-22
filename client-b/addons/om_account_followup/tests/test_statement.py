@@ -18,18 +18,12 @@ class TestStatements(AccountTestInvoicingCommon):
         super().setUpClass()
         cls.env.company.external_report_layout_id = cls.env.ref('web.external_layout_standard')
         cls.partner = cls.env['res.partner'].create({'name': 'Trade Partner', 'email': 'trade@example.com'})
-        cls.invoice = cls._due_on_its_date('out_invoice', '2026-01-01', 1000.0)
-        cls.bill = cls._due_on_its_date('in_invoice', '2026-03-10', 400.0)
-        cls.old_bill = cls._due_on_its_date('in_invoice', '2026-01-10', 250.0)
-
-    @classmethod
-    def _due_on_its_date(cls, move_type, invoice_date, amount):
-        # the invoice form of the tests of 19.0 leaves the due date on today
-        move = cls.init_invoice(move_type, partner=cls.partner, invoice_date=invoice_date, amounts=[amount])
-        move.invoice_payment_term_id = False
-        move.invoice_date_due = invoice_date
-        move.action_post()
-        return move
+        cls.invoice = cls.init_invoice('out_invoice', partner=cls.partner, invoice_date='2026-01-01',
+                                       amounts=[1000.0], post=True)
+        cls.bill = cls.init_invoice('in_invoice', partner=cls.partner, invoice_date='2026-03-10',
+                                    amounts=[400.0], post=True)
+        cls.old_bill = cls.init_invoice('in_invoice', partner=cls.partner, invoice_date='2026-01-10',
+                                        amounts=[250.0], post=True)
 
     def test_vendor_statement_lists_the_open_bills(self):
         groups = self.partner._followup_statement_lines(statement_type='vendor')

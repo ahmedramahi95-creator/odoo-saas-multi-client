@@ -47,6 +47,7 @@ class IrHttpSignIn(models.AbstractModel):
         # Logging a refused session out before the standard check makes Odoo
         # answer as for any expired session: back to the sign-in page.
         from odoo.http import request  # noqa: PLC0415
+        from odoo.http.session import logout  # noqa: PLC0415
         uid = request and request.session.uid
         if uid:
             env = api.Environment(request.env.cr, SUPERUSER_ID, {})
@@ -54,28 +55,21 @@ class IrHttpSignIn(models.AbstractModel):
             reason = rules.enabled and cls._om_session_refused(env, rules, uid)
             if reason:
                 env['om.user.audit.log']._om_log('session_end', separate=True, user_id=uid, detail=reason)
-                request.session.logout(keep_db=True)
+                logout(request.session, keep_db=True)
                 # the env was built from the session before this check; drop the user
                 request.env = api.Environment(request.env.cr, None, request.env.context)
+        elif request and request.env and request.env.uid:
+            # an API key (JSON-2) bypasses the session and _check_credentials
+            env = api.Environment(request.env.cr, SUPERUSER_ID, {})
+            rules = env['om.access.profile']._resolve(request.env.uid)
+            if rules.enabled and (
+                    rules.has_flag('block_login') or rules.has_flag('block_rpc')
+                    or rules.login_refusal(utc_now(), request.httprequest.remote_addr)):
+                message = _("Your access profile does not allow this sign-in.")
+                env['om.user.audit.log']._om_log('refused', separate=True, user_id=request.env.uid,
+                                                 method='API key', detail=message)
+                raise AccessDenied(message)
         return super()._authenticate_explicit(routing)
-
-    @classmethod
-    def _auth_method_bearer(cls):
-        # an API key (JSON-2) bypasses the session and _check_credentials; on
-        # Odoo 19 the user of the key is only known once this has run
-        from odoo.http import request  # noqa: PLC0415
-        super()._auth_method_bearer()
-        if request.session.uid or not request.env.uid:
-            return
-        env = api.Environment(request.env.cr, SUPERUSER_ID, {})
-        rules = env['om.access.profile']._resolve(request.env.uid)
-        if rules.enabled and (
-                rules.has_flag('block_login') or rules.has_flag('block_rpc')
-                or rules.login_refusal(utc_now(), request.httprequest.remote_addr)):
-            message = _("Your access profile does not allow this sign-in.")
-            env['om.user.audit.log']._om_log('refused', separate=True, user_id=request.env.uid,
-                                             method='API key', detail=message)
-            raise AccessDenied(message)
 
     @classmethod
     def _om_session_refused(cls, env, rules, uid):

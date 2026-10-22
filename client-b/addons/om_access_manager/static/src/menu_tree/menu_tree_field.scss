@@ -86,8 +86,3 @@
         max-height: none;
     }
 }
-
-// Odoo 18 has no indeterminate checkbox: a branch partly hidden is dimmed
-.o_om_partial .form-check-input:checked {
-    opacity: .5;
-}

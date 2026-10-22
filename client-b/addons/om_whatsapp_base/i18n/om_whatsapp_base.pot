@@ -4,7 +4,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-22 06:44+0000\n"
 "PO-Revision-Date: 2026-10-22 06:44+0000\n"
@@ -139,11 +139,6 @@ msgid "Accounts"
 msgstr ""
 
 #. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_needaction
-msgid "Action Needed"
-msgstr ""
-
-#. module: om_whatsapp_base
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_account__active
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_template__active
 msgid "Active"
@@ -197,11 +192,6 @@ msgid "Attach Report"
 msgstr ""
 
 #. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_attachment_count
-msgid "Attachment Count"
-msgstr ""
-
-#. module: om_whatsapp_base
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_composer__attachment_ids
 msgid "Attachments"
 msgstr ""
@@ -210,21 +200,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_whatsapp_base/models/om_whatsapp_account.py:0
 msgid "Audio"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model,name:om_whatsapp_base.model_base
-msgid "Base"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__mobile_blacklisted
-msgid "Blacklisted Phone Is Mobile"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__phone_blacklisted
-msgid "Blacklisted Phone is Phone"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -264,11 +239,6 @@ msgid "Channel Member"
 msgstr ""
 
 #. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_discuss_channel__channel_type
-msgid "Channel Type"
-msgstr ""
-
-#. module: om_whatsapp_base
 #: model:ir.model.fields,help:om_whatsapp_base.field_discuss_channel__channel_type
 msgid ""
 "Chat is private and unique between 2 persons. Group is private among invited"
@@ -300,6 +270,11 @@ msgstr ""
 #: model:ir.model,name:om_whatsapp_base.model_res_partner
 #: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_form
 msgid "Contact"
+msgstr ""
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_discuss_channel__channel_type
+msgid "Conversation Type"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -345,9 +320,16 @@ msgid "Discussion Channel"
 msgstr ""
 
 #. module: om_whatsapp_base
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_discuss_channel__display_name
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_discuss_channel_member__display_name
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_ir_actions_server__display_name
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_mail_message__display_name
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_mail_notification__display_name
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_mail_thread__display_name
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_account__display_name
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_composer__display_name
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_template__display_name
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__display_name
 msgid "Display Name"
 msgstr ""
 
@@ -403,33 +385,11 @@ msgid "Failure type"
 msgstr ""
 
 #. module: om_whatsapp_base
-#: model:ir.model.fields,help:om_whatsapp_base.field_res_partner__phone_sanitized
-msgid ""
-"Field used to store sanitized phone number. Helps speeding up searches and "
-"comparisons."
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_follower_ids
-msgid "Followers"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_partner_ids
-msgid "Followers (Partners)"
-msgstr ""
-
-#. module: om_whatsapp_base
 #: model:ir.model.fields,help:om_whatsapp_base.field_mail_mail__om_whatsapp_receipt
 #: model:ir.model.fields,help:om_whatsapp_base.field_mail_message__om_whatsapp_receipt
 msgid ""
 "For a message received: what WhatsApp was told, once a user read it in "
 "Discuss or played it."
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__has_message
-msgid "Has Message"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -439,14 +399,43 @@ msgid "Has WhatsApp Error"
 msgstr ""
 
 #. module: om_whatsapp_base
+#: model:om.whatsapp.template,body:om_whatsapp_base.om_whatsapp_template_demo_greeting
+msgid ""
+"Hello {{ object.name }}, welcome! I am {{ user.name }}, your contact at {{ "
+"user.company_id.name }}. Write to us here whenever you need anything."
+msgstr ""
+
+#. module: om_whatsapp_base
 #: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_template_view_form
 msgid "Hello {{ object.partner_id.name }}, ..."
 msgstr ""
 
 #. module: om_whatsapp_base
+#: model:om.whatsapp.template,body:om_whatsapp_base.om_whatsapp_template_demo_app
+msgid ""
+"Hi {{ object.name }}, hurray! I have found a free, cool app for WhatsApp in "
+"Odoo. Check it out in the apps soon: "
+"https://apps.odoo.com/apps/modules/20.0/om_whatsapp_web"
+msgstr ""
+
+#. module: om_whatsapp_base
+#: model:om.whatsapp.template,body:om_whatsapp_base.om_whatsapp_template_demo_meeting
+msgid ""
+"Hi {{ object.name }}, thank you for your time today. I will send you our "
+"proposal by tomorrow."
+msgstr ""
+
+#. module: om_whatsapp_base
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_discuss_channel__id
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_discuss_channel_member__id
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_ir_actions_server__id
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_mail_message__id
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_mail_notification__id
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_mail_thread__id
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_account__id
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_composer__id
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_template__id
+#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__id
 msgid "ID"
 msgstr ""
 
@@ -456,44 +445,6 @@ msgstr ""
 msgid ""
 "Id of the message in WhatsApp, used to skip duplicates, match replies and "
 "status updates."
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,help:om_whatsapp_base.field_res_partner__message_needaction
-msgid "If checked, new messages require your attention."
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,help:om_whatsapp_base.field_res_partner__message_has_error
-msgid "If checked, some messages have a delivery error."
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,help:om_whatsapp_base.field_res_partner__phone_sanitized_blacklisted
-msgid ""
-"If the sanitized phone number is on the blacklist, the contact won't receive"
-" mass mailing sms anymore, from any list"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,help:om_whatsapp_base.field_res_partner__mobile_blacklisted
-msgid ""
-"Indicates if a blacklisted sanitized phone number is a mobile number. Helps "
-"distinguish which number is blacklisted             when there is both a "
-"mobile and phone field in a model."
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,help:om_whatsapp_base.field_res_partner__phone_blacklisted
-msgid ""
-"Indicates if a blacklisted sanitized phone number is a phone number. Helps "
-"distinguish which number is blacklisted             when there is both a "
-"mobile and phone field in a model."
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_is_follower
-msgid "Is Follower"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -541,6 +492,11 @@ msgid "Manages the WhatsApp accounts and templates, and sees every message."
 msgstr ""
 
 #. module: om_whatsapp_base
+#: model:om.whatsapp.template,name:om_whatsapp_base.om_whatsapp_template_demo_meeting
+msgid "Meeting Follow-up"
+msgstr ""
+
+#. module: om_whatsapp_base
 #: model:ir.model,name:om_whatsapp_base.model_mail_message
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_composer__body
 #: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_message_view_list
@@ -555,17 +511,11 @@ msgid "Message Count"
 msgstr ""
 
 #. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_has_error
-msgid "Message Delivery error"
-msgstr ""
-
-#. module: om_whatsapp_base
 #: model:ir.model,name:om_whatsapp_base.model_mail_notification
-msgid "Message Notifications"
+msgid "Message Notification"
 msgstr ""
 
 #. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_ids
 #: model:ir.ui.menu,name:om_whatsapp_base.om_whatsapp_menu_messages
 #: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_account_view_form
 msgid "Messages"
@@ -583,8 +533,19 @@ msgid "Name"
 msgstr ""
 
 #. module: om_whatsapp_base
+#: model:res.groups.privilege,placeholder:om_whatsapp_base.res_groups_privilege_whatsapp
+msgid "No"
+msgstr ""
+
+#. module: om_whatsapp_base
 #: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_notification__failure_type__om_whatsapp_number
 msgid "No Valid Number"
+msgstr ""
+
+#. module: om_whatsapp_base
+#. odoo-javascript
+#: code:addons/om_whatsapp_base/static/src/discuss/messaging_menu_model_patch.js:0
+msgid "No WhatsApp conversation yet"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -627,26 +588,6 @@ msgid "Number is opted out"
 msgstr ""
 
 #. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_needaction_counter
-msgid "Number of Actions"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__message_has_error_counter
-msgid "Number of errors"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,help:om_whatsapp_base.field_res_partner__message_needaction_counter
-msgid "Number of messages requiring action"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,help:om_whatsapp_base.field_res_partner__message_has_error_counter
-msgid "Number of messages with delivery error"
-msgstr ""
-
-#. module: om_whatsapp_base
 #. odoo-python
 #: code:addons/om_whatsapp_base/models/mail_message.py:0
 msgid "Only WhatsApp itself gives a message its id."
@@ -669,24 +610,14 @@ msgstr ""
 #: model:ir.model.fields,help:om_whatsapp_base.field_om_whatsapp_template__lang
 msgid ""
 "Optional translation language (ISO code) to select when sending out an "
-"email. If not set, the english version will be used. This should usually be "
-"a placeholder expression that provides the appropriate language, e.g. {{ "
-"object.partner_id.lang }}."
+"email. If not set, the main partner's language will be used. This should "
+"usually be a placeholder expression that provides the appropriate language, "
+"e.g. {{ object.partner_id.lang }}."
 msgstr ""
 
 #. module: om_whatsapp_base
 #: model:ir.model.fields,field_description:om_whatsapp_base.field_om_whatsapp_composer__partner_id
 msgid "Partner"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__phone_sanitized_blacklisted
-msgid "Phone Blacklisted"
-msgstr ""
-
-#. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__phone_mobile_search
-msgid "Phone/Mobile"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -779,17 +710,6 @@ msgid "Res Count"
 msgstr ""
 
 #. module: om_whatsapp_base
-#: model:ir.model.fields,field_description:om_whatsapp_base.field_res_partner__phone_sanitized
-msgid "Sanitized Number"
-msgstr ""
-
-#. module: om_whatsapp_base
-#. odoo-python
-#: code:addons/om_whatsapp_base/models/mail_message.py:0
-msgid "Search the failed WhatsApp messages with = or !=."
-msgstr ""
-
-#. module: om_whatsapp_base
 #: model_terms:ir.ui.view,arch_db:om_whatsapp_base.om_whatsapp_composer_view_form
 msgid "Send"
 msgstr ""
@@ -816,6 +736,12 @@ msgstr ""
 
 #. module: om_whatsapp_base
 #. odoo-python
+#: code:addons/om_whatsapp_base/models/ir_actions_server.py:0
+msgid "Send WhatsApp %(template_name)s"
+msgstr ""
+
+#. module: om_whatsapp_base
+#. odoo-python
 #: code:addons/om_whatsapp_base/models/om_whatsapp_template.py:0
 msgid "Send WhatsApp (%s)"
 msgstr ""
@@ -823,7 +749,6 @@ msgstr ""
 #. module: om_whatsapp_base
 #. odoo-javascript
 #: code:addons/om_whatsapp_base/static/src/chatter/chatter.xml:0
-#: code:addons/om_whatsapp_base/static/src/phone_field/phone_field.xml:0
 msgid "Send a WhatsApp message"
 msgstr ""
 
@@ -855,6 +780,11 @@ msgstr ""
 #. module: om_whatsapp_base
 #: model:ir.model,name:om_whatsapp_base.model_ir_actions_server
 msgid "Server Action"
+msgstr ""
+
+#. module: om_whatsapp_base
+#: model:om.whatsapp.template,name:om_whatsapp_base.om_whatsapp_template_demo_app
+msgid "Share the WhatsApp App"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -960,6 +890,14 @@ msgid "The reaction was not sent to WhatsApp: %(reason)s"
 msgstr ""
 
 #. module: om_whatsapp_base
+#. odoo-javascript
+#: code:addons/om_whatsapp_base/static/src/discuss/messaging_menu_model_patch.js:0
+msgid ""
+"The replies of your contacts to the WhatsApp messages sent from Odoo show up"
+" here."
+msgstr ""
+
+#. module: om_whatsapp_base
 #: model:ir.model.fields,help:om_whatsapp_base.field_mail_mail__om_whatsapp_template_id
 #: model:ir.model.fields,help:om_whatsapp_base.field_mail_message__om_whatsapp_template_id
 msgid ""
@@ -1011,7 +949,13 @@ msgid ""
 "- 'Create Record': create a new record with new values\n"
 "- 'Execute Code': a block of Python code that will be executed\n"
 "- 'Send Webhook Notification': send a POST request to an external system, also known as a Webhook\n"
-"- 'Execute Existing Actions': define an action that triggers several other server actions\n"
+"- 'Multi Actions': define an action that triggers several other server actions\n"
+msgstr ""
+
+#. module: om_whatsapp_base
+#. odoo-javascript
+#: code:addons/om_whatsapp_base/static/src/discuss/messaging_menu_model_patch.js:0
+msgid "Unread"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -1055,18 +999,21 @@ msgid "Voice message"
 msgstr ""
 
 #. module: om_whatsapp_base
+#: model:om.whatsapp.template,name:om_whatsapp_base.om_whatsapp_template_demo_greeting
+msgid "Welcome"
+msgstr ""
+
+#. module: om_whatsapp_base
 #. odoo-javascript
 #: code:addons/om_whatsapp_base/static/src/avatar_card/avatar_card.xml:0
 #: code:addons/om_whatsapp_base/static/src/chatter/chatter.xml:0
-#: code:addons/om_whatsapp_base/static/src/core/messaging_menu_patch.js:0
-#: code:addons/om_whatsapp_base/static/src/core/messaging_menu_patch.xml:0
 #: code:addons/om_whatsapp_base/static/src/core/notification_model_patch.js:0
-#: code:addons/om_whatsapp_base/static/src/discuss/discuss_app_patch.js:0
-#: code:addons/om_whatsapp_base/static/src/phone_field/phone_field.xml:0
+#: code:addons/om_whatsapp_base/static/src/discuss/messaging_menu_model_patch.js:0
+#: code:addons/om_whatsapp_base/static/src/phone_field/phone_field.js:0
 #: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_message__message_type__om_whatsapp
 #: model:ir.model.fields.selection,name:om_whatsapp_base.selection__mail_notification__notification_type__om_whatsapp
-#: model:ir.module.category,name:om_whatsapp_base.module_category_whatsapp
 #: model:ir.ui.menu,name:om_whatsapp_base.om_whatsapp_menu_root
+#: model:res.groups.privilege,name:om_whatsapp_base.res_groups_privilege_whatsapp
 #: model_terms:ir.ui.view,arch_db:om_whatsapp_base.view_partner_form_inherit_om_whatsapp
 msgid "WhatsApp"
 msgstr ""
@@ -1084,6 +1031,11 @@ msgstr ""
 #. module: om_whatsapp_base
 #: model:ir.actions.act_window,name:om_whatsapp_base.om_whatsapp_account_action
 msgid "WhatsApp Accounts"
+msgstr ""
+
+#. module: om_whatsapp_base
+#: model:ir.module.module,shortdesc:base.module_om_whatsapp_base
+msgid "WhatsApp Connector Base"
 msgstr ""
 
 #. module: om_whatsapp_base
@@ -1183,9 +1135,23 @@ msgid "WhatsApp not sent"
 msgstr ""
 
 #. module: om_whatsapp_base
+#: model:ir.module.module,description:base.module_om_whatsapp_base
+msgid ""
+"WhatsApp templates, composer and message log for any document, ready for any"
+" WhatsApp provider."
+msgstr ""
+
+#. module: om_whatsapp_base
 #. odoo-python
 #: code:addons/om_whatsapp_base/models/mail_message.py:0
 msgid "WhatsApp to %(contact)s"
+msgstr ""
+
+#. module: om_whatsapp_base
+#: model:ir.module.module,summary:base.module_om_whatsapp_base
+msgid ""
+"WhatsApp, WhatsApp Templates, Send WhatsApp, WhatsApp Message Log, Click to "
+"Chat"
 msgstr ""
 
 #. module: om_whatsapp_base

@@ -5,7 +5,8 @@ import json
 from odoo import http
 from odoo.http import request
 
-from odoo.addons.base.controllers import rpc as base_rpc
+from odoo.addons.rpc.controllers import jsonrpc, xmlrpc
+from odoo.addons.rpc.controllers.json2 import WebJson2Controller
 from odoo.addons.web.controllers.dataset import DataSet
 from odoo.addons.web.controllers.export import CSVExport, ExcelExport, Export
 from odoo.addons.web.controllers.json import WebJsonController
@@ -41,7 +42,8 @@ def with_address(dispatch_rpc):
 
 # the RPC routes run without a database, so overriding their controllers would
 # not apply: wrap the function they call instead
-base_rpc.dispatch_rpc = with_address(base_rpc.dispatch_rpc)
+xmlrpc.dispatch_rpc = with_address(xmlrpc.dispatch_rpc)
+jsonrpc.dispatch_rpc = with_address(jsonrpc.dispatch_rpc)
 
 
 class DataSetAudit(DataSet):
@@ -55,6 +57,14 @@ class DataSetAudit(DataSet):
     def call_button(self, model, method, args, kwargs, path=None):
         mark_rpc_entry(model, method)
         return super().call_button(model, method, args, kwargs, path=path)
+
+
+class WebJson2Audit(WebJson2Controller):
+
+    @http.route()
+    def web_json_2_rpc(self, __model__, __method__, *args, **kwargs):
+        mark_rpc_entry(__model__, __method__)
+        return super().web_json_2_rpc(__model__, __method__, *args, **kwargs)
 
 
 class WebJsonAudit(WebJsonController):

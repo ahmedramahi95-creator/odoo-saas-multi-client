@@ -7,11 +7,6 @@ Run it against an Odoo server with demo data and the dashboards installed (om_ac
     python3 om_spreadsheet_account/tools/export_samples.py http://localhost:8069 admin admin
 
 Needs Playwright (pip install playwright && playwright install chromium). Not loaded by Odoo.
-
-Without Playwright, the test tagged om_export_samples writes them with the browser of the Odoo tests, on a database
-with demo data:
-
-    odoo-bin -d <database> --test-tags om_export_samples --stop-after-init
 """
 import json
 import os
@@ -34,24 +29,8 @@ SAMPLES = {
 EXPORT_JS = r"""
 async (name) => {
     const { helpers } = odoo.loader.modules.get("@odoo/o-spreadsheet");
-    // Odoo 18: the loader is the one of the dashboard action, not a service: one of our own
-    const { DashboardLoader } = odoo.loader.modules.get(
-        "@spreadsheet_dashboard/bundle/dashboard_action/dashboard_loader"
-    );
-    const env = odoo.__WOWL_DEBUG__.root.env;
-    const loader = new DashboardLoader(env, env.services.orm);
-    await loader.load();
-    let dashboardId;
-    for (const group of loader.getDashboardGroups()) {
-        for (const dashboard of group.dashboards) {
-            if (dashboard.displayName === name) {
-                dashboardId = dashboard.id;
-            }
-        }
-    }
-    const dashboard = loader.getDashboard(dashboardId);
-    await dashboard.promise;
-    const model = dashboard.model;
+    const loader = odoo.__WOWL_DEBUG__.root.env.services.spreadsheet_dashboard_loader;
+    const model = loader.getActiveDashboard().model;
     const isLoading = () => model.getters.getSheetIds().some((sheetId) => {
         for (let row = 0; row < model.getters.getNumberRows(sheetId); row++) {
             for (let col = 0; col < model.getters.getNumberCols(sheetId); col++) {
@@ -88,10 +67,7 @@ async (name) => {
                     continue;
                 }
                 const xc = helpers.toXC(col, row);
-                // a cell is an object in the data of Odoo 18
-                cells[xc] = {
-                    content: typeof cell.value === "boolean" ? (cell.value ? "TRUE" : "FALSE") : String(cell.value),
-                };
+                cells[xc] = typeof cell.value === "boolean" ? (cell.value ? "TRUE" : "FALSE") : String(cell.value);
                 if (cell.format && !(sheet.formats || {})[xc]) {
                     sheet.formats = sheet.formats || {};
                     sheet.formats[xc] = formatId(cell.format);
@@ -100,36 +76,43 @@ async (name) => {
         }
         sheet.cells = cells;
     }
-    // the charts reading the models read the values they show, written next to the data. On Odoo 18 an Odoo
-    // chart is a figure of its own, its chart id the one of the figure.
+    // the charts reading the models read the values they show, written next to the data
     const dataSheet = data.sheets.find((sheet) => sheet.name === "Data");
     let column = 20;
     for (const sheet of data.sheets) {
         for (const figure of sheet.figures) {
-            const definition = figure.data;
-            if (figure.tag !== "chart" || !definition.type.startsWith("odoo_")) {
+            if (figure.tag !== "carousel") {
                 continue;
             }
-            const runtime = model.getters.getChartRuntime(figure.id);
-            const chartData = runtime?.chartJsConfig?.data || { labels: [], datasets: [] };
-            const labels = chartData.labels || [];
-            const values = chartData.datasets?.[0]?.data || [];
-            labels.forEach((text, index) => {
-                dataSheet.cells[helpers.toXC(column, index)] = { content: String(text) };
-                dataSheet.cells[helpers.toXC(column + 1, index)] = { content: String(values[index] ?? 0) };
-            });
-            const last = Math.max(labels.length, 1) - 1;
-            // the chart of the same kind, on the values: odoo_bar becomes bar
-            figure.data = {
-                type: definition.type.replace("odoo_", ""),
-                title: definition.title,
-                legendPosition: definition.legendPosition,
-                humanize: true,
-                labelRange: `Data!${helpers.toXC(column, 0)}:${helpers.toXC(column, last)}`,
-                dataSets: [{ dataRange: `Data!${helpers.toXC(column + 1, 0)}:${helpers.toXC(column + 1, last)}` }],
-                dataSetsHaveTitle: false,
-            };
-            column += 2;
+            for (const [chartId, definition] of Object.entries(figure.data.chartDefinitions || {})) {
+                if (definition.dataSource?.type !== "odoo") {
+                    continue;
+                }
+                const runtime = model.getters.getChartRuntime(chartId);
+                const chartData = runtime?.chartJsConfig?.data || { labels: [], datasets: [] };
+                const labels = chartData.labels || [];
+                const values = chartData.datasets?.[0]?.data || [];
+                labels.forEach((text, index) => {
+                    dataSheet.cells[helpers.toXC(column, index)] = String(text);
+                    dataSheet.cells[helpers.toXC(column + 1, index)] = String(values[index] ?? 0);
+                });
+                const last = Math.max(labels.length, 1) - 1;
+                figure.data.chartDefinitions[chartId] = {
+                    type: definition.type,
+                    title: definition.title,
+                    legendPosition: definition.legendPosition,
+                    humanize: true,
+                    dataSource: {
+                        type: "range",
+                        labelRange: `Data!${helpers.toXC(column, 0)}:${helpers.toXC(column, last)}`,
+                        dataSets: [{ dataSetId: "0", dataRange: `Data!${helpers.toXC(column + 1, 0)}:${helpers.toXC(column + 1, last)}` }],
+                        dataSetsHaveTitle: false,
+                    },
+                    dataSetStyles: {},
+                };
+                column += 2;
+            }
+            figure.data.fieldMatching = {};
         }
     }
     data.pivots = {};

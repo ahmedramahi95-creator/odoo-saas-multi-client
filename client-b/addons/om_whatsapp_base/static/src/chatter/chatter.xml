@@ -2,11 +2,10 @@
 <templates xml:space="preserve">
     <t t-inherit="mail.Chatter" t-inherit-mode="extension">
         <xpath expr="//button[hasclass('o-mail-Chatter-logNote')]" position="after">
-            <button t-if="canWhatsapp" class="o-mail-Chatter-whatsapp btn btn-secondary text-nowrap me-1"
-                    t-att-class="{ 'my-2': !props.compactHeight }"
-                    t-att-disabled="!state.thread.canPostMessage and props.threadId"
-                    title="Send a WhatsApp message" t-on-click="onClickWhatsapp">
-                <i class="fa fa-whatsapp me-1"/>WhatsApp
+            <button t-if="this.canWhatsapp" class="o-mail-Chatter-whatsapp btn btn-secondary text-nowrap"
+                    t-att-disabled="!this.state.thread.canPostMessage and this.thread().id"
+                    title="Send a WhatsApp message" t-on-click="this.onClickWhatsapp">
+                <i class="oi me-1" data-icon="oi_whatsapp"/>WhatsApp
             </button>
         </xpath>
     </t>

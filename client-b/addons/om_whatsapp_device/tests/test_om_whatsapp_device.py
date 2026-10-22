@@ -8,7 +8,7 @@ from unittest.mock import patch
 from odoo import Command, fields
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
-from odoo.tools import str2bool
+from odoo.tools import mute_logger
 
 from odoo.addons.om_whatsapp_device.models import om_whatsapp_account as device_module
 
@@ -28,7 +28,7 @@ class DeviceCase(TransactionCase):
         })
         cls.alice = cls.env['res.partner'].create({'name': 'Alice', 'phone': '+32470123456'})
         # a database where the bridge was started from Odoo: the tests start none
-        cls.env['ir.config_parameter'].sudo().set_param('om_whatsapp_device.autostart', False)
+        cls.env['ir.config_parameter'].sudo().set_bool('om_whatsapp_device.autostart', False)
 
     def _link(self, bridge):
         self.account.with_user(self.manager).action_device_link()
@@ -118,7 +118,7 @@ class TestOmWhatsappDeviceBridgeProcess(DeviceCase):
 
     def test_start_the_bridge(self):
         admin = self.env.ref('base.user_admin')
-        self.env['ir.config_parameter'].sudo().set_param('om_whatsapp_device.node', False)
+        self.env['ir.config_parameter'].sudo().set_str('om_whatsapp_device.node', False)
         with patch.object(device_module.shutil, 'which', return_value=None), self.assertRaisesRegex(UserError, 'Node.js'):
             self.account.with_user(admin).action_device_start_bridge()
         with patch.object(device_module.shutil, 'which', return_value='/usr/bin/node'), \
@@ -134,7 +134,7 @@ class TestOmWhatsappDeviceBridgeProcess(DeviceCase):
         self.assertEqual(options['env']['OM_WA_SECRET'], self.account._device_bridge_secret())
         self.assertEqual((options['env']['OM_WA_HOST'], options['env']['OM_WA_PORT']), ('127.0.0.1', '8077'))
         self.assertTrue(options['start_new_session'])
-        self.assertTrue(str2bool(self.env['ir.config_parameter'].sudo().get_param('om_whatsapp_device.autostart'), False))
+        self.assertTrue(self.env['ir.config_parameter'].sudo().get_bool('om_whatsapp_device.autostart'))
         with self.assertRaises(AccessError):
             self.account.with_user(self.manager).action_device_start_bridge()
 
@@ -144,7 +144,7 @@ class TestOmWhatsappDeviceBridgeProcess(DeviceCase):
             bridge.running = False
             self.env['om.whatsapp.account']._cron_device_check()
             self.assertEqual(self.account.device_state, 'offline')
-            self.env['ir.config_parameter'].sudo().set_param('om_whatsapp_device.autostart', True)
+            self.env['ir.config_parameter'].sudo().set_bool('om_whatsapp_device.autostart', True)
             with patch.object(type(self.account), '_device_start_bridge_process') as start:
                 self.env['om.whatsapp.account']._cron_device_check()
             self.assertTrue(start.called)
@@ -254,6 +254,7 @@ class TestOmWhatsappDeviceWebhook(HttpCase):
         return self.url_open('/om_whatsapp_device/webhook', data=body, headers={
             'Content-Type': 'application/json', 'X-Signature-256': signature, 'X-Odoo-Database': self.env.cr.dbname})
 
+    @mute_logger('odoo.addons.om_whatsapp_device.controllers.webhook')
     def test_only_the_bridge_signs(self):
         response = self._post([{'kind': 'state', 'state': 'open', 'me': '96555551234'}], secret='forged-secret')
         self.assertEqual(response.status_code, 403)

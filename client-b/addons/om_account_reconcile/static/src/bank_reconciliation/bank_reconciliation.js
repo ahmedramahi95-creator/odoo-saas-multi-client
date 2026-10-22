@@ -1,6 +1,7 @@
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, proxy, usePlugin, useProps } from "@odoo/owl";
 import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { _t } from "@web/core/l10n/translation";
+import { NotificationPlugin } from "@web/core/notifications/notification_plugin";
 import { MultiRecordSelector } from "@web/core/record_selectors/multi_record_selector";
 import { RecordSelector } from "@web/core/record_selectors/record_selector";
 import { registry } from "@web/core/registry";
@@ -9,7 +10,7 @@ import { useDebounced } from "@web/core/utils/timing";
 import { ControlPanel } from "@web/search/control_panel/control_panel";
 import { formatMonetary } from "@web/views/fields/formatters";
 import { parseFloat } from "@web/views/fields/parsers";
-import { standardActionServiceProps } from "@web/webclient/actions/action_service";
+import { standardActionServiceProps } from "@web/webclient/actions/action_plugin";
 
 const TRANSACTION_PAGE = 80;
 
@@ -27,14 +28,14 @@ export class OmBankReconciliation extends Component {
     static template = "om_account_reconcile.BankReconciliation";
     static components = { ControlPanel, MultiRecordSelector, RecordSelector };
 
-    static props = { ...standardActionServiceProps };
+    props = useProps(standardActionServiceProps);
 
     setup() {
         this.orm = useService("orm");
         this.actionService = useService("action");
-        this.notification = useService("notification");
+        this.notification = usePlugin(NotificationPlugin);
         const params = this.props.action.params || {};
-        this.state = useState({
+        this.state = proxy({
             // "bank" clears the transactions of the bank, "open_items" the invoices against the payments
             mode: params.mode || "bank",
             accountType: "receivable",
@@ -313,8 +314,7 @@ export class OmBankReconciliation extends Component {
     }
 
     get accountDomain() {
-        // Odoo 18 marks the accounts no longer used as deprecated (19: inactive)
-        return [["account_type", "!=", "off_balance"], ["deprecated", "=", false]];
+        return [["account_type", "!=", "off_balance"], ["active", "=", true]];
     }
 
     get taxDomain() {

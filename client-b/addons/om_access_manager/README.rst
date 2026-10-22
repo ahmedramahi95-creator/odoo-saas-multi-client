@@ -118,10 +118,21 @@ Features
 * **History**: every change of a profile, of its switches and of its lines
   (data rules, fields, buttons, view elements, allowed records) is logged in
   its chatter, with who made it and when.
+* **Versions**: each save that changes a profile keeps a version of it, with
+  who saved it and a summary. A version shows what it changed and what has
+  changed since, line by line, and restores in one click: the profile becomes
+  what it was, its users stay. Versions cannot be edited nor deleted; the last
+  200 of each profile are kept.
+* **Why?**: pick a user, a data, an operation and, if you like, a record, and
+  see whether the user may do it and why: the access rules of their groups that
+  grant it (or the groups that would), the rules that limit everyone, then each
+  of their profiles, its menus and its record filter, the fields and buttons
+  restricted there, and their recent refusals. From the Access Manager menu,
+  the user form, the Effective Access window and every refusal of the audit log.
 * **Effective access on the user form**: what the user really ends up with, all
   of their profiles combined.
 * **Export and import** of profiles as a file, to build them on a test database
-  and load them on production. Menus, reports, actions and allowed records are
+  and load them on production, sign-in rules included. Menus, reports, actions and allowed records are
   matched by external id, else by name; what the other database lacks is
   skipped and listed in the chatter of the profile. Users are matched by login,
   if asked.
@@ -258,7 +269,7 @@ Read this before you use the module to protect anything that matters.
   is why the default mode of a button rule is *Hide and block*.
 * **Hidden and read-only fields are enforced at the boundary, not inside
   Odoo.** What a user, the browser console or a script asks for (web client,
-  XML-RPC and JSON-RPC) never carries a hidden value: it is stripped
+  JSON-2, XML-RPC and JSON-RPC) never carries a hidden value: it is stripped
   from what is read, and filtering, sorting, grouping or exporting on it is
   refused; what is written to a read-only or hidden field is ignored. A field
   hidden under a condition is blanked on the matching records only, but
@@ -267,15 +278,15 @@ Read this before you use the module to protect anything that matters.
   product cost must not stop a delivery from being validated. A report or a
   document Odoo builds itself (a PDF, an email) may therefore still show the
   value: hide that report too.
-* **A blocked button is refused from every client**: the web client, XML-RPC
-  and JSON-RPC, clicked or called by hand.
+* **A blocked button is refused from every client**: the web client, JSON-2,
+  XML-RPC and JSON-RPC, clicked or called by hand.
 * **A company on a profile follows the users, not the company switcher.** The
   profile applies to everyone who has that company among theirs, whichever
   company they are working in. It cannot follow the switcher: core caches the
   menus per user with no company in the key, so a profile that changed with the
   active company would leave stale menus on screen.
 * **A field's value filter is checked when a record is saved** from a client
-  (web client, XML-RPC, JSON-RPC), lines of a one2many included: a
+  (web client, JSON-2, XML-RPC, JSON-RPC), lines of a one2many included: a
   value outside the filter is refused. A value the record already holds is
   left alone. A filter the server cannot evaluate on its own (one reading a
   value only the screen has) only narrows the dropdown. When several profiles
@@ -316,10 +327,7 @@ Read this before you use the module to protect anything that matters.
   Odoo gives with it (its menus, its data, its record rules); the profile then
   takes away what it restricts. Removing the user from the profile, or
   archiving the profile, removes the group again, unless the user has it on
-  their own form. Odoo 18 copies the groups a group implies onto the users:
-  the profile remembers which ones it added, and takes back only those. A
-  group set by hand on the user form after the profile gave it goes with the
-  profile too: set it again if needed.
+  their own form.
 * **Speed.** Measured with 50 profiles and 2,000 rules: a user's rules are
   built once after each change (about 0.1 s) and then cached; a search costs
   nothing noticeable, and opening a screen about 7 ms more, its view being

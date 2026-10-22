@@ -2,7 +2,7 @@
 WhatsApp Connector Web
 ======================
 
-This module sends WhatsApp messages and PDFs from Odoo 18 through WhatsApp Web, open in another tab
+This module sends WhatsApp messages and PDFs from Odoo 20 through WhatsApp Web, open in another tab
 of the same browser, with the Odoo Mates WhatsApp Connector browser extension for Chrome and Firefox,
 and brings the replies back to Odoo. No WhatsApp Business API account is needed, and the user stays
 on the Odoo page.

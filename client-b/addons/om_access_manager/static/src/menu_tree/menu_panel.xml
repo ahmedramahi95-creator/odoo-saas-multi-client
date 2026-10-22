@@ -2,6 +2,7 @@
 <templates xml:space="preserve">
 
     <t t-name="om_access_manager.MenuPanel">
+        <t t-set="panel" t-value="this.panel"/>
         <div class="o_om_menu_panel">
             <div class="o_om_menu_panel_head mb-2">
                 <div t-if="panel.menu.depth" class="text-muted small" t-out="panel.menu.path"/>
@@ -176,7 +177,7 @@
                     <div class="o_om_panel_section mt-2" t-att-data-section="section.key">
                         <button type="button" class="btn btn-link p-0 fw-bold text-reset o_om_section_toggle"
                                 t-on-click="() => this.toggleSection(section.key)">
-                            <i t-attf-class="fa fa-fw {{this.state.open[section.key] ? 'fa-caret-down' : 'fa-caret-right'}}"/>
+                            <i class="oi oi-fw" t-att-data-icon="this.state.open[section.key] ? 'arrow_drop_down' : 'arrow_right'"/>
                             <t t-out="section.label"/>
                         </button>
                         <div t-if="this.state.open[section.key]" class="ps-3 pt-1">

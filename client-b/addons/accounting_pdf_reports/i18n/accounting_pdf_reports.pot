@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 07:06+0000\n"
-"PO-Revision-Date: 2026-10-22 07:06+0000\n"
+"POT-Creation-Date: 2026-10-13 15:40+0000\n"
+"PO-Revision-Date: 2026-10-13 15:40+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -98,6 +98,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax_grid
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "<strong>Period:</strong>"
 msgstr ""
@@ -136,6 +137,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax_grid
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "<strong>Target Moves:</strong>"
 msgstr ""
@@ -162,6 +164,14 @@ msgstr ""
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,help:accounting_pdf_reports.field_account_annual_report__include_signatures
 msgid "A page to sign: prepared by, reviewed by and approved by."
+msgstr ""
+
+#. module: accounting_pdf_reports
+#. odoo-python
+#: code:addons/accounting_pdf_reports/models/account_financial_report.py:0
+msgid ""
+"A section of a financial report cannot be placed under itself or under one "
+"of its sub-sections."
 msgstr ""
 
 #. module: accounting_pdf_reports
@@ -247,6 +257,13 @@ msgid "Accounting Report"
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.module.module,description:base.module_accounting_pdf_reports
+msgid ""
+"Accounting Reports For Odoo 20, Annual Report, Accounting Financial Reports,"
+" Odoo 20 Financial Reports"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__account_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__account_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__account_ids
@@ -316,6 +333,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax_grid
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "All Entries"
 msgstr ""
@@ -342,6 +360,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax_grid
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "All Posted Entries"
 msgstr ""
@@ -386,6 +405,11 @@ msgid "Annual Report"
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.module.module,summary:base.module_accounting_pdf_reports
+msgid "Annual Report and Accounting Reports For Odoo 20"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #. odoo-python
 #: code:addons/accounting_pdf_reports/report/report_annual.py:0
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_annual
@@ -418,6 +442,8 @@ msgid "Automatic formatting"
 msgstr ""
 
 #. module: accounting_pdf_reports
+#. odoo-python
+#: code:addons/accounting_pdf_reports/report/report_tax_grid.py:0
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_annual
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_financial
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
@@ -457,6 +483,23 @@ msgid "Borrowings"
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_tax_report_wizard__report_kind__tax
+msgid "By Tax"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_tax_report_wizard__report_kind__grid
+msgid "By Tax Grid"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,help:accounting_pdf_reports.field_account_tax_report_wizard__report_kind
+msgid ""
+"By Tax Grid prints the tax return of the country as its localization lays it"
+" out, grid by grid."
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_form_cash_flow
 msgid "By account type"
 msgstr ""
@@ -467,6 +510,11 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.account_tax_closing_wizard_view
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.accounting_tax_report_view
 msgid "Cancel"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_equity_accounts0
+msgid "Capital and Reserves"
 msgstr ""
 
 #. module: accounting_pdf_reports
@@ -562,11 +610,6 @@ msgstr ""
 #. module: accounting_pdf_reports
 #: model:ir.model,name:accounting_pdf_reports.model_account_common_journal_report
 msgid "Common Journal Report"
-msgstr ""
-
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_res_company
-msgid "Companies"
 msgstr ""
 
 #. module: accounting_pdf_reports
@@ -784,6 +827,7 @@ msgid "Display Debit/Credit Columns"
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_annual_report__display_name
@@ -800,6 +844,17 @@ msgstr ""
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_closing_wizard__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_agedpartnerbalance__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_annual__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_cash_flow__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_financial__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_general_ledger__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_journal__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_partnerledger__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax_grid__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_trialbalance__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_res_company__display_name
 msgid "Display Name"
 msgstr ""
 
@@ -859,6 +914,7 @@ msgstr ""
 #. odoo-python
 #: code:addons/accounting_pdf_reports/report/report_cash_flow.py:0
 #: model:account.account.type,name:accounting_pdf_reports.data_account_type_equity
+#: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_equity0
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__equity
 msgid "Equity"
 msgstr ""
@@ -916,8 +972,6 @@ msgstr ""
 #: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_financial_report_tree
 #: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_financial
 #: model:ir.ui.menu,name:accounting_pdf_reports.menu_account_reports
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_legal_statement
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_reports_settings
 msgid "Financial Reports"
 msgstr ""
 
@@ -963,6 +1017,7 @@ msgstr ""
 #: code:addons/accounting_pdf_reports/report/report_journal.py:0
 #: code:addons/accounting_pdf_reports/report/report_partner_ledger.py:0
 #: code:addons/accounting_pdf_reports/report/report_tax.py:0
+#: code:addons/accounting_pdf_reports/report/report_tax_grid.py:0
 #: code:addons/accounting_pdf_reports/report/report_trial_balance.py:0
 msgid "Form content is missing, this report cannot be printed."
 msgstr ""
@@ -999,11 +1054,7 @@ msgid "General Ledger Report"
 msgstr ""
 
 #. module: accounting_pdf_reports
-#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_search
-msgid "Group By"
-msgstr ""
-
-#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_annual_report__id
@@ -1020,6 +1071,16 @@ msgstr ""
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_closing_wizard__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_agedpartnerbalance__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_annual__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_cash_flow__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_financial__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_general_ledger__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_journal__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_partnerledger__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax_grid__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_trialbalance__id
 msgid "ID"
 msgstr ""
 
@@ -1094,11 +1155,6 @@ msgstr ""
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_print_journal__sort_selection__move_name
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 msgid "Journal Entry Number"
-msgstr ""
-
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_account_move_line
-msgid "Journal Item"
 msgstr ""
 
 #. module: accounting_pdf_reports
@@ -1216,8 +1272,12 @@ msgstr ""
 
 #. module: accounting_pdf_reports
 #: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_liability0
+msgid "Liabilities"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_liabilitysum0
-msgid "Liability"
+msgid "Liabilities and Equity"
 msgstr ""
 
 #. module: accounting_pdf_reports
@@ -1338,6 +1398,11 @@ msgid "Notes to the financial statements, printed at the end of the report."
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.module.module,shortdesc:base.module_accounting_pdf_reports
+msgid "Odoo 20 Accounting Financial Reports"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:account.account.type,name:accounting_pdf_reports.data_account_off_sheet
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__off_balance
 msgid "Off-Balance Sheet"
@@ -1409,11 +1474,6 @@ msgid "Partner Ledger Report"
 msgstr ""
 
 #. module: accounting_pdf_reports
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_partner_reports
-msgid "Partner Reports"
-msgstr ""
-
-#. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__result_selection
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__result_selection
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__result_selection
@@ -1460,6 +1520,14 @@ msgstr ""
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__period_length
 msgid "Period Length (days)"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#. odoo-python
+#: code:addons/accounting_pdf_reports/wizard/account_tax_report.py:0
+msgid ""
+"Pick the tax return to print. The tax returns come with the fiscal "
+"localization of the country (the l10n modules)."
 msgstr ""
 
 #. module: accounting_pdf_reports
@@ -1573,6 +1641,7 @@ msgid "Ref"
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__report_kind
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_form
 msgid "Report"
 msgstr ""
@@ -1758,8 +1827,19 @@ msgid "Tax Report"
 msgstr ""
 
 #. module: accounting_pdf_reports
+#: model:ir.actions.report,name:accounting_pdf_reports.action_report_account_tax_grid
+#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_tax_grid
+msgid "Tax Report by Tax Grid"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_tax_report
 msgid "Tax Reports"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__tax_grid_report_id
+msgid "Tax Return"
 msgstr ""
 
 #. module: accounting_pdf_reports
@@ -1769,14 +1849,17 @@ msgid "Tax closing %(date_from)s - %(date_to)s"
 msgstr ""
 
 #. module: accounting_pdf_reports
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_taxes_and_fiscal
-msgid "Taxes & Fiscal"
+#. odoo-python
+#: code:addons/accounting_pdf_reports/report/report_cash_flow.py:0
+msgid "Taxes, salaries and other current liabilities"
 msgstr ""
 
 #. module: accounting_pdf_reports
 #. odoo-python
-#: code:addons/accounting_pdf_reports/report/report_cash_flow.py:0
-msgid "Taxes, salaries and other current liabilities"
+#: code:addons/accounting_pdf_reports/models/account_financial_report.py:0
+msgid ""
+"The amount of the section \"%s\" depends on itself: a Report Value cannot "
+"name the section itself, nor a section that sums it."
 msgstr ""
 
 #. module: accounting_pdf_reports
@@ -2009,7 +2092,7 @@ msgstr ""
 #. module: accounting_pdf_reports
 #. odoo-python
 #: code:addons/accounting_pdf_reports/wizard/aged_partner.py:0
-msgid "You must set a start date."
+msgid "You must set an as of date."
 msgstr ""
 
 #. module: accounting_pdf_reports

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  The user guide of Odoo 18 Accounting for Community Edition.
+  The user guide of Odoo 20 Accounting for Community Edition.
 
   This file is the source. Edit it, then rebuild the PDF that ships in the app:
 
@@ -12,7 +12,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Odoo 18 Accounting for Community Edition - User Guide</title>
+<title>Odoo 20 Accounting for Community Edition - User Guide</title>
 <style>
 /* wkhtmltopdf 0.12.x runs an old WebKit: no CSS variables, no flexbox, no `gap`.
    Everything below is written for it, on purpose. */
@@ -160,12 +160,12 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <span class="cover-kicker">User Guide</span>
     </div>
     <h1>Accounting</h1>
-    <h2>for Odoo 18 Community Edition</h2>
+    <h2>for Odoo 20 Community Edition</h2>
     <p class="lead">Setting the books up, recording the daily work, reconciling the
         bank, running the reports and closing the period &mdash; with the complete
         Odoo Mates accounting suite.</p>
     <div class="cover-foot">
-        <div><strong>Odoo 18</strong><span>Community Edition</span></div>
+        <div><strong>Odoo 20</strong><span>Community Edition</span></div>
         <div><strong>LGPL-3</strong><span>Free and open source</span></div>
         <div><strong>odoomates@gmail.com</strong><span>Odoo Mates</span></div>
     </div>
@@ -180,7 +180,6 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">1.1</span><span>What this app installs</span></div>
     <div class="toc-line"><span class="n">1.2</span><span>Who can do what</span></div>
     <div class="toc-line"><span class="n">1.3</span><span>Finding your way around</span></div>
-    <div class="toc-line"><span class="n">1.4</span><span>Upgrading from an earlier 18 release</span></div>
 
     <div class="toc-part"><span class="n">2</span><span class="t">The settings, one screen at a time</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">2.1</span><span>Do this before the first entry</span></div>
@@ -238,6 +237,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">8.1</span><span>Budgetary positions</span></div>
     <div class="toc-line"><span class="n">8.2</span><span>Creating a budget</span></div>
     <div class="toc-line"><span class="n">8.3</span><span>Following a budget</span></div>
+    <div class="toc-line"><span class="n">8.4</span><span>Stopping the overspend</span></div>
+    <div class="toc-line"><span class="n">8.5</span><span>Budget control of purchase orders</span></div>
 
     <div class="toc-part"><span class="n">9</span><span class="t">Getting paid: follow-ups</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">9.1</span><span>Follow-up plans</span></div>
@@ -285,8 +286,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <h1>Before you start</h1>
 
     <h2><span class="n">1.1</span> What this app installs</h2>
-    <p>Installing <strong>Odoo 18 Accounting Community</strong> turns the Invoicing
-        application of Odoo 18 Community Edition into a full accounting application. It
+    <p>Installing <strong>Odoo 20 Accounting Community</strong> turns the Invoicing
+        application of Odoo 20 Community Edition into a full accounting application. It
         installs seventeen modules and arranges their menus, groups and dashboards so that
         they work as one:</p>
     <ul class="plain two-col">
@@ -306,6 +307,15 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Eight spreadsheet dashboards</li>
     </ul>
 
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p><strong>One module is not installed for you.</strong> <em>Budget Control of
+            Purchases</em> (<code>om_account_budget_purchase</code>) adds committed amounts
+            and budget control on purchase orders. Download it from the Odoo Apps store and
+            it installs itself as soon as Purchase and the budgets are both present. See
+            section 8.5.</p>
+    </div>
+
     <h2><span class="n">1.2</span> Who can do what</h2>
     <p>Accounting in Odoo is driven by two groups. Set them on each user under
         <span class="path">Settings &rsaquo; Users &amp; Companies &rsaquo; Users</span>, in the
@@ -322,7 +332,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
                 <td><strong>Accounting Manager</strong><span class="sub">group_account_manager</span></td>
                 <td>Everything above, plus the configuration: journals, chart of accounts,
                     fiscal years, lock dates, period closing, currency revaluation, and the
-                    right to post an invoice over the credit limit of the customer.</td>
+                    right to post documents that go over budget.</td>
             </tr>
         </tbody>
     </table>
@@ -342,11 +352,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td><strong>Dashboard</strong></td><td>The journal cards: bank, cash, sales, purchases, with what is left to reconcile.</td></tr>
             <tr><td><strong>Customers</strong></td><td>Invoices, credit notes, payments, customers, products.</td></tr>
             <tr><td><strong>Vendors</strong></td><td>Bills, refunds, payments, vendors.</td></tr>
-            <tr><td><strong>Accounting</strong></td><td>Journal entries, the journals, bank and cash statements, reconciliation, ledgers, recurring payments, cash forecast items and the closing.</td></tr>
+            <tr><td><strong>Accounting</strong></td><td>Journal entries, the journals, bank and cash statements, reconciliation, ledgers, assets, budgets, recurring payments and cash forecast items.</td></tr>
             <tr><td><strong>Review</strong></td><td>What needs attention before closing.</td></tr>
             <tr><td><strong>Follow-Ups</strong></td><td>The customers to chase, their plans and the analysis.</td></tr>
             <tr><td><strong>Reporting</strong></td><td>Statement reports, partner reports, tax, audit reports, daily reports, management.</td></tr>
-            <tr><td><strong>Configuration</strong></td><td>Settings, journals, chart of accounts, fiscal years, assets, budgets, cheque formats, follow-up plans, statement file maps, and the management settings: asset categories, budgetary positions, recurring templates and closing tasks.</td></tr>
+            <tr><td><strong>Configuration</strong></td><td>Settings, journals, chart of accounts, fiscal years, closing, cheque formats, follow-up plans, statement file maps.</td></tr>
         </tbody>
     </table>
     <figure>
@@ -354,26 +364,6 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <figcaption>The Accounting menu, with the transactions, the journals, the
             reconciliation screens and the ledgers.</figcaption>
     </figure>
-    <h2><span class="n">1.4</span> Upgrading from an earlier 18 release</h2>
-    <p>This guide describes release 1.3.0 of October 2026. If an earlier release of the suite already runs on your
-        Odoo 18, upgrade it as a whole: this release adds modules and changes several of the others.</p>
-    <ol>
-        <li><strong>Back up the database</strong> before anything else.</li>
-        <li>Replace <strong>all the Odoo Mates accounting modules</strong> with this release, not only this app. The
-            new ones &mdash; reconciliation, statement import, cheque printing, cash forecast, currency rates and
-            revaluation, and the dashboards &mdash; must be in your addons path too, or the upgrade stops.</li>
-        <li>Restart Odoo, then <span class="path">Apps &rsaquo; Update Apps List</span>, in developer mode.</li>
-        <li>Upgrade all the modules of the suite that are installed, together: Odoo upgrades a module and the ones
-            depending on it, not the modules it depends on, so upgrading <strong>Odoo 18 Accounting Community</strong>
-            alone is not enough. The new modules install themselves with it. From the command line,
-            <code>-u accounting_pdf_reports,<wbr>om_account_accountant,<wbr>om_account_asset,<wbr>om_account_budget,<wbr>om_account_daily_reports,<wbr>om_account_followup,<wbr>om_fiscal_year,<wbr>om_recurring_payments</code> (or <code>-u all</code>).</li>
-    </ol>
-    <div class="note">
-        <p class="label">Good to know</p>
-        <p>Your data is kept: the upgrade only adds to it. Nothing new switches itself on either &mdash; the
-            automatic currency rates, the automatic reconciliation and the blocking over the credit limit stay off
-            until you set them up (sections 2.13 and 11).</p>
-    </div>
 </div>
 
 <!-- ============================================================ PART 2 -->
@@ -464,7 +454,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Turn on <strong>Total Rounding</strong> in <span class="path">Configuration &rsaquo;
             Settings &rsaquo; Taxes</span>, and set the profit and loss accounts the rounding
             difference is posted to.</li>
-        <li>Open <span class="path">Configuration &rsaquo; Accounting &rsaquo; Cash Roundings</span> and create a
+        <li>Open <span class="path">Configuration &rsaquo; Cash Roundings</span> and create a
             method: the <strong>Precision</strong> (0.05 for a five-cent coin, 100 for a
             currency with no small change), the <strong>Method</strong> &mdash; Up, Down or
             Nearest &mdash; and the <strong>Strategy</strong>: add a rounding line to the
@@ -497,7 +487,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         or a vehicle for management.</p>
     <p>Turn it on if you need to answer &ldquo;what did this cost us?&rdquo; about something
         that is not a general ledger account. Then create the plans and the analytic accounts
-        under <span class="path">Configuration &rsaquo; Analytic Accounting &rsaquo; Analytic Accounts</span>, and fill the
+        under <span class="path">Accounting &rsaquo; Analytic Accounts</span>, and fill the
         <strong>Analytic Distribution</strong> column on invoice lines, journal entries,
         recurring templates, budget lines and reconciliation counterparts.</p>
     <div class="note">
@@ -515,7 +505,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             books are kept in and every report is printed in, and changing it once entries
             exist does not re-convert them.</li>
         <li>Turn on <strong>Multi-Currencies</strong>, then activate the currencies you trade
-            in under <span class="path">Configuration &rsaquo; Accounting &rsaquo; Currencies</span>. A currency
+            in under <span class="path">Configuration &rsaquo; Currencies</span>. A currency
             that is not active cannot be chosen anywhere.</li>
         <li>Set the <strong>Exchange Gain or Loss Journal</strong> and the gain and loss
             accounts. This is what Odoo posts the difference to when an invoice is paid at a
@@ -625,6 +615,12 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <table>
         <thead><tr><th style="width:34%">Option</th><th>What it does</th></tr></thead>
         <tbody>
+            <tr><td><strong>Budget warnings</strong></td>
+                <td>The share of a budget line at which the responsible is notified, and whether
+                    an email is sent when a line goes over. Section 8.3.</td></tr>
+            <tr><td><strong>Block Documents Over Budget</strong></td>
+                <td>Vendor bills and purchase orders over budget always warn; with this on, only
+                    accounting managers can post or confirm them. Section 8.4.</td></tr>
             <tr><td><strong>Reconcile New Transactions Automatically</strong></td>
                 <td>Lets the reconciliation models work on imported transactions without being
                     asked. Section 6.3.</td></tr>
@@ -632,13 +628,18 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
                 <td>The source, the frequency and the currencies. Sections 2.8 and 11.2.</td></tr>
             <tr><td><strong>Currency Revaluation</strong></td>
                 <td>The journal and the unrealized gain and loss accounts. Sections 2.9 and 11.3.</td></tr>
-            <tr><td><strong>Refuse to post an invoice going over the limit</strong></td>
-                <td>Under the customer credit limit: a customer invoice that goes over the limit of the
-                    customer is refused, except for the accounting managers, and the override is logged.</td></tr>
+            <tr><td><strong>Gain and Loss on Asset Sale</strong></td>
+                <td>The accounts a sold or scrapped asset is written off to. Section 7.3.</td></tr>
             <tr><td><strong>Enhanced Financial Reports</strong></td>
                 <td>Preview the financial reports on screen instead of downloading them.</td></tr>
         </tbody>
     </table>
+    <figure>
+        <img src="img/budget-warnings-settings.jpg" alt="Budget settings"/>
+        <figcaption>The budget warnings and the blocking of documents over budget, in the
+            accounting settings.</figcaption>
+    </figure>
+
     <h2><span class="n">2.14</span> The checklist</h2>
     <p>Walk down this once. Everything marked <em>always</em> has to be right before the first
         entry; the rest depends on how you work.</p>
@@ -648,13 +649,13 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td>Company: country, currency, VAT number, address</td><td>Always</td><td>Settings &rsaquo; Users &amp; Companies &rsaquo; Companies</td></tr>
             <tr><td>Fiscal localisation package</td><td>Always</td><td>Settings &rsaquo; Fiscal Localization</td></tr>
             <tr><td>Chart of accounts: types and Allow Reconciliation</td><td>Always</td><td>Configuration &rsaquo; Chart of Accounts</td></tr>
-            <tr><td>Journals, one per bank account</td><td>Always</td><td>Configuration &rsaquo; Accounting &rsaquo; Journals</td></tr>
+            <tr><td>Journals, one per bank account</td><td>Always</td><td>Configuration &rsaquo; Journals</td></tr>
             <tr><td>Outstanding accounts on every payment method</td><td>Always</td><td>The journal, Incoming and Outgoing Payments tabs</td></tr>
             <tr><td>Default sale and purchase tax, prices tax-included or not</td><td>Always</td><td>Settings &rsaquo; Taxes</td></tr>
             <tr><td>Tax rounding method</td><td>Always</td><td>Settings &rsaquo; Taxes</td></tr>
             <tr><td>Exchange gain and loss journal and accounts</td><td>Always</td><td>Settings &rsaquo; Currencies</td></tr>
             <tr><td>Cash basis taxes</td><td>If you file that way</td><td>Settings &rsaquo; Taxes</td></tr>
-            <tr><td>Total rounding, and a cash rounding method</td><td>If your coins are big</td><td>Settings &rsaquo; Taxes, Configuration &rsaquo; Accounting &rsaquo; Cash Roundings</td></tr>
+            <tr><td>Total rounding, and a cash rounding method</td><td>If your coins are big</td><td>Settings &rsaquo; Taxes, Configuration &rsaquo; Cash Roundings</td></tr>
             <tr><td>Anglo-Saxon accounting</td><td>If you hold stock</td><td>Settings &rsaquo; Stock Valuation</td></tr>
             <tr><td>Analytic accounting</td><td>If you cost projects</td><td>Settings &rsaquo; Analytics</td></tr>
             <tr><td>Multi-currencies, and the currencies activated</td><td>If you trade abroad</td><td>Settings &rsaquo; Currencies</td></tr>
@@ -663,7 +664,9 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td>Cheque layout and margins, then a cheque format</td><td>If you pay by cheque</td><td>Settings &rsaquo; Checks, Configuration &rsaquo; Cheque Formats</td></tr>
             <tr><td>Gulf Cooperation Council format, Arabic installed</td><td>In the Gulf</td><td>Settings &rsaquo; Invoicing</td></tr>
             <tr><td>Fiscal years and periods</td><td>If your year is not the calendar</td><td>Settings, then Configuration &rsaquo; Fiscal Years</td></tr>
+            <tr><td>Budget warnings and blocking</td><td>If you budget</td><td>Settings &rsaquo; Accounting</td></tr>
             <tr><td>Automatic reconciliation</td><td>If you import statements</td><td>Settings &rsaquo; Accounting</td></tr>
+            <tr><td>Asset gain and loss accounts</td><td>If you hold assets</td><td>Settings &rsaquo; Accounting</td></tr>
         </tbody>
     </table>
 </div>
@@ -713,7 +716,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     </div>
 
     <h2><span class="n">3.3</span> Journals</h2>
-    <p><span class="path">Configuration &rsaquo; Accounting &rsaquo; Journals</span>. A journal groups entries of
+    <p><span class="path">Configuration &rsaquo; Journals</span>. A journal groups entries of
         one kind and gives them their numbering.</p>
     <table>
         <thead><tr><th style="width:18%">Type</th><th style="width:44%">Use it for</th><th>Set on it</th></tr></thead>
@@ -761,7 +764,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         </tbody>
     </table>
     <ol>
-        <li>Open <span class="path">Configuration &rsaquo; Accounting &rsaquo; Journals</span> and the bank journal.</li>
+        <li>Open <span class="path">Configuration &rsaquo; Journals</span> and the bank journal.</li>
         <li>On the <strong>Incoming Payments</strong> tab, set the Outstanding Account of each payment method.</li>
         <li>Do the same on the <strong>Outgoing Payments</strong> tab.</li>
         <li>Repeat on the cash journal, using the cash account.</li>
@@ -822,7 +825,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <ol>
         <li>Create a dedicated <strong>Opening Balance</strong> account of type Equity, or use
             the one your chart provides.</li>
-        <li>Go to <span class="path">Accounting &rsaquo; Transactions &rsaquo; Journal Entries</span>, create an entry
+        <li>Go to <span class="path">Accounting &rsaquo; Journal Entries</span>, create an entry
             in the Miscellaneous journal dated the day before you go live.</li>
         <li>Enter one line per account from your trial balance, debit or credit as it stands. Do
             not enter a single lump line for receivables and payables &mdash; see the next
@@ -879,10 +882,13 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Put the vendor's own document number in <strong>Bill Reference</strong>. Odoo warns
             you if the same reference comes in twice from the same vendor, which catches most
             duplicate payments.</li>
+        <li>If the bill goes over a budget line, a warning banner appears at the top. With
+            <strong>Block Documents Over Budget</strong> on, only an accounting manager can post
+            it (section 8.4).</li>
     </ul>
 
     <h2><span class="n">5.3</span> Journal entries by hand</h2>
-    <p><span class="path">Accounting &rsaquo; Transactions &rsaquo; Journal Entries</span>. For payroll, depreciation
+    <p><span class="path">Accounting &rsaquo; Journal Entries</span>. For payroll, depreciation
         entered manually, accruals, corrections and anything that is not an invoice, a bill or
         a payment.</p>
     <ol>
@@ -965,7 +971,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
 
     <h2><span class="n">5.6</span> Recurring payments</h2>
     <p><span class="path">Accounting &rsaquo; Recurring Payments</span>, templates under
-        <span class="path">Configuration &rsaquo; Management &rsaquo; Recurring Templates</span>.
+        <span class="path">Configuration &rsaquo; Accounting &rsaquo; Recurring Templates</span>.
         For rent, leases, subscriptions and loan instalments &mdash; anything with the same
         amount on the same day each period.</p>
     <ol>
@@ -1116,7 +1122,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <h1>Assets</h1>
 
     <h2><span class="n">7.1</span> Asset categories</h2>
-    <p><span class="path">Configuration &rsaquo; Management &rsaquo; Asset Category</span>. A
+    <p><span class="path">Configuration &rsaquo; Accounting &rsaquo; Asset Categories</span>. A
         category is a template: set it up once and every asset of that kind inherits it.</p>
     <ul class="plain">
         <li><strong>Asset account</strong> &mdash; where the gross value sits.</li>
@@ -1134,7 +1140,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
 
     <h2><span class="n">7.2</span> Creating an asset</h2>
     <ol>
-        <li><span class="path">Configuration &rsaquo; Accounting &rsaquo; Assets &rsaquo; New</span>: name, category,
+        <li><span class="path">Accounting &rsaquo; Assets &rsaquo; New</span>: name, category,
             purchase value and date. The board is computed as you type.</li>
         <li>Or let the vendor bill do it: put the asset category on the bill line and confirm the
             bill &mdash; the asset is created and linked to it.</li>
@@ -1152,25 +1158,24 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <strong>Create Move</strong> on the line. The entry debits the expense account and
         credits the accumulated depreciation.</p>
     <p>When an asset is sold or scrapped, use <strong>Sell or Dispose</strong>: the remaining
-        value is depreciated in one last entry and the asset is closed. Invoice the sale itself to
-        the buyer as usual. <strong>Modify Depreciation</strong> changes the number or the length
-        of the periods still to come, from the next one.</p>
+        value is written off to the gain and loss accounts of the settings (section 2.13) and
+        the asset is closed.</p>
 
     <h2><span class="n">7.4</span> Assets that already existed</h2>
-    <p>For an asset bought before you went live, create it with the value still to depreciate
-        &mdash; the purchase value less the depreciation already booked &mdash; and the number of
-        depreciations left, so that only the remaining value depreciates in Odoo. The opening entry (section 4.2) carries the gross value and the
+    <p>For an asset bought before you went live, create it with its original purchase value and
+        date, then set the depreciation already posted so that only the remaining value
+        depreciates in Odoo. The opening entry (section 4.2) carries the gross value and the
         accumulated depreciation on the balance sheet; the asset record only drives what
         happens from now on.</p>
 
     <h2><span class="n">7.5</span> Asset reports</h2>
-    <p><span class="path">Reporting &rsaquo; Management &rsaquo; Assets</span> gives
-        the gross value, the depreciation posted and the depreciation still to post, by asset,
-        category and date, in pivot and graph form. The <strong>Assets</strong> dashboard of the
-        Dashboards app shows the same figures at a glance.</p>
+    <p><span class="path">Reporting &rsaquo; Management &rsaquo; Depreciation Schedule</span>
+        gives the gross value, the depreciation of the period and the closing values, category
+        by category &mdash; the schedule an auditor asks for. <strong>Asset Analysis</strong> is
+        the same data in pivot and graph form.</p>
     <figure>
-        <img src="img/asset-analysis.jpg" alt="Assets analysis"/>
-        <figcaption>The Assets Analysis: the depreciation posted and to post.</figcaption>
+        <img src="img/depreciation-schedule.jpg" alt="Depreciation schedule"/>
+        <figcaption>The depreciation schedule.</figcaption>
     </figure>
 </div>
 
@@ -1184,21 +1189,18 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <p>A budgetary position is a named group of accounts &mdash; &ldquo;Operating
         expenses&rdquo;, &ldquo;Product sales&rdquo; &mdash; and it is what a budget line is
         measured against. Create them first, under <span class="path">Configuration &rsaquo;
-        Management &rsaquo; Budgetary Positions</span>, and put the relevant accounts in each.</p>
+        Accounting</span>, and put the relevant accounts in each.</p>
 
     <h2><span class="n">8.2</span> Creating a budget</h2>
     <ol>
-        <li><span class="path">Configuration &rsaquo; Accounting &rsaquo; Budgets &rsaquo; New</span>: a name, the
+        <li><span class="path">Accounting &rsaquo; Budgets &rsaquo; New</span>: a name, the
             responsible, and the period the budget covers.</li>
         <li>Add the lines: a budgetary position, an analytic account if you budget that way
             (section 2.6), and the planned amount.</li>
-        <li>Enter the expenses as negative amounts and the revenues as positive ones, as Odoo
-            reads them in the books.</li>
-        <li>Leave the <strong>Paid Date</strong> empty to spread the line over its period, or set it
-            when the amount is expected in full on one day &mdash; this is what makes the
-            theoretical amount meaningful.</li>
-        <li><strong>Confirm</strong> the budget, then <strong>Approve</strong> it; the figures
-            fill in as the entries are posted.</li>
+        <li>Choose whether the line is spread over the period or expected in full on a planned
+            date &mdash; this is what makes the theoretical amount meaningful.</li>
+        <li>Confirm the budget. Its lines are locked from then on, and the figures start filling
+            in.</li>
     </ol>
     <p>Each line then shows the planned amount, the theoretical amount expected by today, the
         actual amount posted, and the achievement as a percentage.</p>
@@ -1210,18 +1212,47 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
 
     <h2><span class="n">8.3</span> Following a budget</h2>
     <ul class="plain">
-        <li><span class="path">Reporting &rsaquo; Management &rsaquo; Budgets Analysis</span>
-            gives every line in pivot, list and graph, grouped by budget, position or analytic
-            account.</li>
-        <li>The <strong>Budgets</strong> dashboard of the Dashboards app compares the actual
-            expenses and revenues with what the budgets expected at this date.</li>
-        <li>Open the entries behind a line from the line itself, to see what made its actual
-            amount.</li>
+        <li>The <strong>Over Budget</strong> filter shows the lines that have gone past their plan.</li>
+        <li>The responsible is notified when a line reaches the share set in the settings, and
+            gets a To-Do activity when it goes over.</li>
+        <li><strong>Budget vs Actual</strong> prints the comparison;
+            <span class="path">Reporting &rsaquo; Management &rsaquo; Budget Analysis</span>
+            gives it in pivot, list and graph.</li>
+        <li><strong>Copy to Next Period</strong> carries a budget forward; the lines can be split
+            by month or by quarter.</li>
     </ul>
     <figure>
-        <img src="img/budget-analysis.jpg" alt="Budget analysis"/>
-        <figcaption>The Budgets Analysis.</figcaption>
+        <img src="img/budget-vs-actual.jpg" alt="Budget vs actual"/>
+        <figcaption>The Budget vs Actual PDF.</figcaption>
     </figure>
+
+    <h2><span class="n">8.4</span> Stopping the overspend</h2>
+    <p>Vendor bills that would push a line over its plan always show a warning banner. Turn on
+        <strong>Block Documents Over Budget</strong> in the settings and posting one is refused
+        for everyone but an accounting manager, with the offending lines named in the
+        message.</p>
+
+    <h2><span class="n">8.5</span> Budget control of purchase orders</h2>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p><strong>Separate module.</strong> This section needs <em>Odoo 20 Budget Management -
+            Purchase</em> (<code>om_account_budget_purchase</code>), which this app does not
+            install. It is free on the Odoo Apps store: download it into your addons path and
+            update the apps list &mdash; it installs itself as soon as Purchase and the budgets
+            are both present, or install it by hand from Apps.</p>
+    </div>
+    <p>With it installed you get:</p>
+    <ul class="plain">
+        <li>A <strong>Committed</strong> column on every expense line of a confirmed budget: what
+            the confirmed purchase orders have already promised and not yet billed. As the bills
+            come in, the amount moves from Committed to Actual by itself.</li>
+        <li>A warning banner on the purchase order, while it is still a quotation, naming the
+            budget lines it would push over.</li>
+        <li>With the blocking option on, confirming such an order is refused for anyone but an
+            accounting manager.</li>
+    </ul>
+    <p>Orders in a foreign currency are converted at the rate of the day the order was approved,
+        and a refund on a bill gives the quantity back to the committed amount.</p>
 </div>
 
 <!-- ============================================================ PART 9 -->
@@ -1268,7 +1299,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <p>Print or email a statement of account from the customer or from the follow-up screen:
         every open invoice, what has been paid, and the ageing of the balance. There is a vendor
         statement too, for the accounts your suppliers send you.
-        <span class="path">Follow-Ups &rsaquo; Follow-Up Analysis</span>
+        <span class="path">Reporting &rsaquo; Management &rsaquo; Follow-Up Analysis</span>
         shows how the overdue balance is spread across the levels.</p>
     <figure>
         <img src="img/customer-statement.jpg" alt="Customer statement"/>
@@ -1344,7 +1375,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         blank. After three failures in a row the accounting managers are notified.</p>
 
     <h2><span class="n">11.3</span> Revaluing at the closing rate</h2>
-    <p><span class="path">Accounting &rsaquo; Closing &rsaquo; Currency Revaluation</span>, at
+    <p><span class="path">Configuration &rsaquo; Closing &rsaquo; Currency Revaluation</span>, at
         the end of each period.</p>
     <ol>
         <li>Set the journal and the unrealized gain and loss accounts once, in the settings
@@ -1374,7 +1405,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <h1>Closing the books</h1>
 
     <h2><span class="n">12.1</span> Lock dates</h2>
-    <p><span class="path">Accounting &rsaquo; Closing &rsaquo; Lock Dates</span>. The simplest
+    <p><span class="path">Configuration &rsaquo; Closing &rsaquo; Lock Dates</span>. The simplest
         and strongest control in the suite.</p>
     <table>
         <thead><tr><th style="width:36%">Lock</th><th>Effect</th></tr></thead>
@@ -1396,7 +1427,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     </figure>
 
     <h2><span class="n">12.2</span> Closing a period</h2>
-    <p><span class="path">Accounting &rsaquo; Closing &rsaquo; Period Closing</span>. The
+    <p><span class="path">Configuration &rsaquo; Closing &rsaquo; Period Closing</span>. The
         monthly routine:</p>
     <ol>
         <li>Post everything: invoices, bills, payments, payroll, depreciation, recurring entries.</li>
@@ -1414,7 +1445,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     </figure>
 
     <h2><span class="n">12.3</span> Closing a year</h2>
-    <p><span class="path">Accounting &rsaquo; Closing &rsaquo; Year-End Closing</span>. After
+    <p><span class="path">Configuration &rsaquo; Closing &rsaquo; Year-End Closing</span>. After
         the last period of the year is closed and your accountant's adjustments are posted, the
         year-end entry carries the result of the year to the retained earnings account and opens
         the next year. <strong>Closing Tasks</strong> keeps the checklist of what remains, and
@@ -1496,7 +1527,16 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         and type the dates. The report prints the base and the tax of each tax, sales and
         purchases apart. A cash basis tax counts in the period it is paid, not the period it
         is invoiced.</p>
-    <p><strong>Withholding taxes.</strong> Install <em>Withholding Tax on Payment</em>
+    <p><strong>By Tax Grid.</strong> Choose <em>By Tax Grid</em> to print the tax return of your
+        country instead: the boxes of the official form, numbered as on it, and the totals the
+        form computes from them &mdash; the tax due or to recover. It comes with the fiscal
+        localization of the country, and each tax fills its boxes. Some 95 countries ship one
+        in Community, among them Belgium, France, Germany, the Netherlands, Spain, Portugal,
+        Austria, Switzerland, Poland, the United Kingdom, India, Saudi Arabia, the United Arab
+        Emirates, Egypt, South Africa, Kenya, Mexico, Canada, Australia and Singapore; Italy and
+        the United States do not. Copy the figures into the portal of the tax office. The
+        electronic filing itself (an XML file, for instance) is not produced.</p>
+    <p><strong>Withholding taxes.</strong> Install <em>Withholding Tax</em>
         (<code>l10n_account_withholding_tax</code>, Community) from the Apps menu to withhold a
         tax when you register a payment. The tax withheld prints in a <em>Withholding</em>
         section of its own, its base counted once, on the payment.</p>
@@ -1634,7 +1674,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <ul class="tick">
         <li>Close all twelve periods.</li>
         <li>Post your accountant's adjustments.</li>
-        <li>Check the assets analysis against the asset accounts.</li>
+        <li>Check the depreciation schedule against the asset accounts.</li>
         <li>Confirm the physical inventory and the stock valuation if you hold stock.</li>
         <li>Run the year-end closing entry and open the new year.</li>
         <li>Print the annual report for the file and for whoever signs the accounts.</li>
@@ -1664,6 +1704,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td>A payslip, invoice or entry cannot be posted</td><td>A lock date covers its date. Only an accounting manager can post before the journal entries lock date, and nobody before the all users lock date.</td></tr>
             <tr><td>The rates stopped updating</td><td>Open the settings and read <strong>Last Update Result</strong>, then press <strong>Test Connection</strong>. A paying source with an expired key fails silently otherwise.</td></tr>
             <tr><td>A revaluation is refused</td><td>That date is already revalued. Reverse or delete the existing adjustment entry first.</td></tr>
+            <tr><td>A vendor bill or purchase order will not confirm</td><td>It goes over budget and blocking is on. Ask an accounting manager, or raise the budget.</td></tr>
             <tr><td>The taxes are a cent out against the invoice</td><td>The rounding method. Section 2.3, and it has to be decided once and left alone.</td></tr>
             <tr><td>The fiscal localisation cannot be changed</td><td>An entry has been posted. Section 2.2 &mdash; this one is decided on day one.</td></tr>
         </tbody>

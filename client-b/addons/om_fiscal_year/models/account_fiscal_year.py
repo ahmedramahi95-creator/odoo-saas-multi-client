@@ -75,10 +75,7 @@ class AccountFiscalYear(models.Model):
             ('company_id', 'child_of', self.company_id.id),
             ('parent_state', '=', 'posted'),
             ('date', '<=', self.date_to),
-            # Odoo 18 carries the balance of the Current Year Earnings over to the next years, unlike 19:
-            # the account type is named, not only the accounts without an initial balance
-            '|', ('account_id.include_initial_balance', '=', False),
-            ('account_id.account_type', '=', 'equity_unaffected'),
+            ('account_id.include_initial_balance', '=', False),
         ]
         if self.closing_move_id:
             domain.append(('move_id', '!=', self.closing_move_id.id))

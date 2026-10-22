@@ -11,8 +11,7 @@
     'depends': ['mail', 'phone_validation'],
     'data': [
         'security/om_whatsapp_groups.xml',
-        'security/ir.model.access.csv',
-        'security/ir_rules.xml',
+        'security/ir.access.csv',
         'data/ir_cron.xml',
         'wizard/om_whatsapp_composer_views.xml',
         'views/om_whatsapp_account_views.xml',

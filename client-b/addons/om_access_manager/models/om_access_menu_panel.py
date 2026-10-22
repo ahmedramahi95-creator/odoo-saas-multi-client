@@ -80,7 +80,7 @@ class OmAccessProfile(models.Model):
         """ Every menu, for the menu tree, with the data it opens. Read with sudo:
         a menu the administrator cannot see may still need hiding. """
         self._om_check_admin()
-        menus = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True}).search([])
+        menus = self.env['ir.ui.menu'].sudo().search([])
         # the Access Manager app is for the access managers: never hidden or restricted from here
         app = self.env.ref('om_access_manager.om_access_root_menu', raise_if_not_found=False)
         if app:
@@ -110,7 +110,7 @@ class OmAccessProfile(models.Model):
         self._om_check_admin()
         Wizard = self.env['om.access.app.wizard']
         model_names = {
-            model_name for menu in self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True}).search([('action', '!=', False)])
+            model_name for menu in self.env['ir.ui.menu'].sudo().search([('action', '!=', False)])
             if (model_name := Wizard._menu_model(menu))
         }
         result = {}
@@ -184,7 +184,7 @@ class OmAccessProfile(models.Model):
                 entry(action.binding_model_id.model)['print'] += 1
         # the apps holding allowed records
         apps = {}
-        Menu = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True})
+        Menu = self.env['ir.ui.menu'].sudo()
         for root in Menu.search([('parent_id', '=', False)]):
             count = sum(len(kind['records']) + kind['per_user'] for kind in profile._om_app_allowed(root))
             if count:
@@ -193,8 +193,8 @@ class OmAccessProfile(models.Model):
             *profile.hidden_report_ids, *profile.hidden_action_ids, *profile.hidden_window_action_ids)]
         # the apps this profile opens through a granted group
         granted_apps = [root.id for root in Menu.search([('parent_id', '=', False)])
-                        if profile.granted_group_ids & self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True}).search(
-                            [('id', 'child_of', root.id)]).groups_id]
+                        if profile.granted_group_ids & self.env['ir.ui.menu'].sudo().search(
+                            [('id', 'child_of', root.id)]).group_ids]
         return {'menu_rules': menu_rules, 'models': state, 'apps': apps, 'hidden_prints': hidden_prints,
                 'granted_apps': granted_apps}
 
@@ -206,20 +206,20 @@ class OmAccessProfile(models.Model):
         profile = self.sudo()[:1]
         members = self.env['res.users'].sudo().browse(user_ids).exists()
         if profile:
-            members |= profile.group_ids.users | profile.assignment_ids.filtered(
+            members |= profile.group_ids.all_user_ids | profile.assignment_ids.filtered(
                 lambda line: line.state == 'active').user_id
         exempt = self.env['om.access.profile']._exempt_user_ids()
         members = members.filtered(lambda user: user.active and not user.share and user.id not in exempt)
         result = {}
-        Menu = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True})
+        Menu = self.env['ir.ui.menu'].sudo()
         for root in Menu.search([('parent_id', '=', False)]):
-            gates = root.groups_id
+            gates = root.group_ids
             if not gates:
                 continue
             levels = (profile or self.env['om.access.profile'].sudo().new({}))._om_app_grants(root)
             # the access level of the app itself (Purchase), its lowest group first
             own = next((level for level in levels
-                        if gates.category_id.filtered(lambda p: p.id == level['privilege_id'])), None)
+                        if gates.privilege_id.filtered(lambda p: p.id == level['privilege_id'])), None)
             if not own:
                 continue
             result[root.id] = {
@@ -227,7 +227,7 @@ class OmAccessProfile(models.Model):
                 'grant': {'id': own['groups'][0]['id'],
                           'name': self.env['res.groups'].sudo().browse(own['groups'][0]['id']).display_name},
                 'group_ids': [group['id'] for level in levels for group in level['groups']],
-                'open': all(user.groups_id & gates for user in members),
+                'open': all(user.all_group_ids & gates for user in members),
             }
         return result
 
@@ -387,7 +387,7 @@ class OmAccessProfile(models.Model):
 
     def _om_also_opened_by(self, menu, model_name):
         Wizard = self.env['om.access.app.wizard']
-        menus = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True}).search([('action', '!=', False), ('id', '!=', menu.id)])
+        menus = self.env['ir.ui.menu'].sudo().search([('action', '!=', False), ('id', '!=', menu.id)])
         return [other.complete_name for other in menus if Wizard._menu_model(other) == model_name]
 
     def _om_app_allowed(self, menu):
@@ -409,23 +409,22 @@ class OmAccessProfile(models.Model):
         return result
 
     def _om_app_grants(self, menu):
-        """ The groups that open the app of ``menu``, by application (Purchase:
+        """ The groups that open the app of ``menu``, by privilege (Purchase:
         User, Administrator), and which one this profile grants. """
-        menus = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True}).search([('id', 'child_of', menu.id)])
-        gates = menus.groups_id
-        # Odoo 18 has no access levels: the application of the groups stands in
-        privileges = gates.category_id
+        menus = self.env['ir.ui.menu'].sudo().search([('id', 'child_of', menu.id)])
+        gates = menus.group_ids
+        privileges = gates.privilege_id
         forbidden = self.env['res.groups']
         for xmlid in UNGRANTABLE_GROUPS:
             forbidden |= self.env.ref(xmlid, raise_if_not_found=False) or self.env['res.groups']
         result = []
         for privilege in privileges.sorted(lambda p: (p.sequence, p.name)):
-            groups = self.env['res.groups'].sudo().search([('category_id', '=', privilege.id)]).filtered(
-                lambda group: not ((group | group.trans_implied_ids) & forbidden))
+            groups = self.env['res.groups'].sudo().search([('privilege_id', '=', privilege.id)]).filtered(
+                lambda group: not ((group | group.all_implied_ids) & forbidden))
             if not groups:
                 continue
             # the lower levels first: a group implying another of the app comes after it
-            groups = groups.sorted(lambda group: (len(group.trans_implied_ids & groups), group.id))
+            groups = groups.sorted(lambda group: (len(group.all_implied_ids & groups), group.sequence, group.id))
             granted = groups & self.granted_group_ids
             result.append({
                 'privilege_id': privilege.id, 'name': privilege.name,
@@ -439,7 +438,7 @@ class OmAccessProfile(models.Model):
         self._om_check_admin()
         self.ensure_one()
         profile = self.sudo()
-        menu = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True}).browse(menu_id).exists()
+        menu = self.env['ir.ui.menu'].sudo().browse(menu_id).exists()
         if not menu:
             raise UserError(_("This menu no longer exists."))
         model_name = menu.action and self.env['om.access.app.wizard']._menu_model(menu)
@@ -520,7 +519,7 @@ class OmAccessProfile(models.Model):
         """ Apply one change made in the panel; return the panel again. """
         self._om_check_admin()
         self.ensure_one()
-        menu = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True}).browse(menu_id).exists()
+        menu = self.env['ir.ui.menu'].sudo().browse(menu_id).exists()
         if not menu:
             raise UserError(_("This menu no longer exists."))
         model_name = menu.action and self.env['om.access.app.wizard']._menu_model(menu)
@@ -586,11 +585,11 @@ class OmAccessProfile(models.Model):
                 line.write(_om_inherited_values(from_menus))
 
     def _om_set_grant(self, menu, model_name, change):
-        """ Grant one group of an application (Purchase / User), or none of them. """
-        privilege = self.env['ir.module.category'].sudo().browse(change.get('privilege_id')).exists()
+        """ Grant one group of a privilege (Purchase / User), or none of them. """
+        privilege = self.env['res.groups.privilege'].sudo().browse(change.get('privilege_id')).exists()
         if not privilege:
             raise UserError(_("Unknown access level."))
-        of_privilege = self.env['res.groups'].sudo().search([('category_id', '=', privilege.id)])
+        of_privilege = self.env['res.groups'].sudo().search([('privilege_id', '=', privilege.id)])
         granted = self.granted_group_ids - of_privilege
         if change.get('group_id'):
             group = of_privilege.filtered(lambda group: group.id == change['group_id'])

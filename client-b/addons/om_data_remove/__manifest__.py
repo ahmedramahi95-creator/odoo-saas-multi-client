@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 18 Remove Data',
+    'name': 'Odoo 20 Remove Data',
     'version': '1.6',
     'author': 'Odoo Mates',
     'category': 'Tools',
@@ -10,7 +10,7 @@
     'license': 'LGPL-3',
     'depends': ['base'],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'views/view.xml',
     ],
     'images': ['static/description/banner.gif'],

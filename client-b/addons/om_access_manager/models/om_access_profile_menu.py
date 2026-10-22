@@ -3,7 +3,7 @@
 # The closest setting wins: a model line on the data itself, then the deepest
 # menu line above a menu opening the data. Data opened from several menus
 # takes the most restrictive of their settings.
-from odoo import _, api, fields, models, tools
+from odoo import _, api, fields, models
 
 from .om_access_profile import MODEL_FLAGS, OPERATIONS, PERM_FIELDS
 from .om_access_profile_model import DRAFT_DOMAIN
@@ -45,10 +45,10 @@ class OmAccessProfileMenu(models.Model):
         help="Also apply to the data other apps open too (customers, products). "
              "Left unticked, making Sales read only leaves the Contacts app alone.")
 
-    _sql_constraints = [
-        ('unique_menu', 'UNIQUE(profile_id, menu_id)',
-         'A profile can only carry one rule per menu.'),
-    ]
+    _unique_menu = models.Constraint(
+        'UNIQUE(profile_id, menu_id)',
+        'A profile can only carry one rule per menu.',
+    )
 
     # a rule can take the access profiles away from the last administrator
     @api.model_create_multi
@@ -84,13 +84,13 @@ class OmAccessProfileMenu(models.Model):
     #
 
     @api.model
-    @tools.ormcache()
+    @api.ormcache()
     def _om_menu_models(self):
         """ ((menu id, (the menu and its ancestors, closest first), models, is
         configuration), ...) for every menu opening data; the models of a
         document's lines (order lines) go with it. """
         Wizard = self.env['om.access.app.wizard']
-        Menu = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True})
+        Menu = self.env['ir.ui.menu'].sudo()
         lines_of = {}
         result = []
         menus = Menu.search([('action', '!=', False)])

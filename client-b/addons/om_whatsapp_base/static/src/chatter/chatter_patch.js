@@ -1,4 +1,4 @@
-import { Chatter } from "@mail/chatter/web_portal/chatter";
+import { Chatter } from "@mail/chatter/web_portal_project/chatter";
 import { onWillStart } from "@odoo/owl";
 import { user } from "@web/core/user";
 import { useService } from "@web/core/utils/hooks";
@@ -25,7 +25,7 @@ patch(Chatter.prototype, {
         } else {
             // a new record: the chatter calls this once the record is saved
             this.onThreadCreated = open;
-            this.props.saveRecord?.();
+            this.webChatterProps.saveRecord?.();
         }
     },
 });

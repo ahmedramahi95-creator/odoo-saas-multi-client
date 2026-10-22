@@ -1,15 +1,18 @@
-import { click, contains, defineMailModels, start, startServer } from "@mail/../tests/mail_test_helpers";
+import {
+    click,
+    contains,
+    defineMailModels,
+    MENU_ACTIVE_IDS,
+    openMessagingMenu,
+    start,
+    startServer,
+} from "@mail/../tests/mail_test_helpers";
 import { describe, test } from "@odoo/hoot";
 import { Command, serverState, withUser } from "@web/../tests/web_test_helpers";
 import { rpc } from "@web/core/network/rpc";
 
 describe.current.tags("desktop");
 defineMailModels();
-
-async function openWhatsappTab() {
-    await click(".o_menu_systray i[aria-label='Messages']");
-    await click(".o-om-whatsapp-headerFilter");
-}
 
 test("the WhatsApp tab lists the conversations of the user", async () => {
     const pyEnv = await startServer();
@@ -26,9 +29,16 @@ test("the WhatsApp tab lists the conversations of the user", async () => {
         { name: "General", channel_type: "channel" },
     ]);
     await start();
-    await openWhatsappTab();
+    await openMessagingMenu(MENU_ACTIVE_IDS.OM_WHATSAPP);
     await contains(".o-mail-NotificationItem", { text: "Alice" });
     await contains(".o-mail-NotificationItem", { count: 1 });
+});
+
+test("the WhatsApp tab tells what it is for when empty", async () => {
+    await startServer();
+    await start();
+    await openMessagingMenu(MENU_ACTIVE_IDS.OM_WHATSAPP);
+    await contains(".o-mail-MessagingMenuEmpty", { text: "No WhatsApp conversation yet" });
 });
 
 test("a new message of a conversation opens its chat window", async () => {
@@ -70,7 +80,7 @@ test("a new message opens a minimised conversation", async () => {
         ],
     });
     await start();
-    await openWhatsappTab();
+    await openMessagingMenu(MENU_ACTIVE_IDS.OM_WHATSAPP);
     await click(".o-mail-NotificationItem", { text: "Alice" });
     await contains(".o-mail-ChatWindow", { text: "Alice" });
     await click(".o-mail-ChatWindow [title='Fold']");

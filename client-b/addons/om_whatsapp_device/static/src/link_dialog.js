@@ -1,7 +1,7 @@
-import { Component, onWillStart, onWillUnmount, useState } from "@odoo/owl";
+import { Component, onWillStart, onWillUnmount, proxy, useProps } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { standardActionServiceProps } from "@web/webclient/actions/action_service";
+import { standardActionServiceProps } from "@web/webclient/actions/action_plugin";
 
 const POLL_DELAY = 2000;
 
@@ -12,13 +12,13 @@ const POLL_DELAY = 2000;
  */
 export class DeviceLink extends Component {
     static template = "om_whatsapp_device.DeviceLink";
-    static props = { ...standardActionServiceProps };
+    props = useProps({ ...standardActionServiceProps });
 
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
         this.accountId = this.props.action.params.account_id;
-        this.state = useState({ status: { state: "connecting" }, withCode: false, phone: "", error: "" });
+        this.state = proxy({ status: { state: "connecting" }, withCode: false, phone: "", error: "" });
         onWillStart(() => this.refresh());
         this.timer = setInterval(() => this.refresh(), POLL_DELAY);
         onWillUnmount(() => clearInterval(this.timer));

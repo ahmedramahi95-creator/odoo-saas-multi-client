@@ -37,7 +37,7 @@ class TestAppWizard(TransactionCase):
     def test_the_wizard_lists_what_the_app_brings(self):
         wizard = self._wizard(self.discuss).save()
         self.assertEqual(wizard.menu_line_ids[:1].menu_id, self.discuss)
-        line = self._model_line(wizard, 'mail.canned.response')
+        line = self._model_line(wizard, 'discuss.channel')
         self.assertTrue(line.owned)
         self.assertTrue(line.perm_read and line.perm_unlink)
 
@@ -46,13 +46,13 @@ class TestAppWizard(TransactionCase):
         self.assertIn(self.discuss, self.profile.hidden_menu_ids)
         # only the app itself is stored: it hides everything below it
         self.assertFalse(self.profile.hidden_menu_ids - self.discuss)
-        row = self.profile.model_ids.filtered(lambda row: row.model_id.model == 'mail.canned.response')
+        row = self.profile.model_ids.filtered(lambda row: row.model_id.model == 'discuss.channel')
         self.assertFalse(row.perm_read or row.perm_create or row.perm_write or row.perm_unlink)
-        self.assertFalse(self.env['mail.canned.response'].with_user(self.user).browse().has_access('read'))
+        self.assertFalse(self.env['discuss.channel'].with_user(self.user).browse().has_access('read'))
 
     def test_read_only_level(self):
         self._apply(self.discuss, 'readonly')
-        Channel = self.env['mail.canned.response'].with_user(self.user).browse()
+        Channel = self.env['discuss.channel'].with_user(self.user).browse()
         self.assertTrue(Channel.has_access('read'))
         for operation in ('create', 'write', 'unlink'):
             self.assertFalse(Channel.has_access(operation), operation)
@@ -62,7 +62,7 @@ class TestAppWizard(TransactionCase):
         wizard = self._wizard(self.discuss).save()
         self.assertEqual(wizard.level, 'current')
         self.assertFalse(any(wizard.menu_line_ids.mapped('visible')))
-        self.assertFalse(self._model_line(wizard, 'mail.canned.response').perm_read)
+        self.assertFalse(self._model_line(wizard, 'discuss.channel').perm_read)
 
     def test_applying_twice_changes_nothing(self):
         def state():

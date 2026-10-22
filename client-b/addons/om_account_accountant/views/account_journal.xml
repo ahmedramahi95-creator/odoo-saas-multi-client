@@ -29,4 +29,16 @@
         </field>
     </record>
 
+    <!-- the standard list of the journals hides its New button: a journal can be created from the list -->
+    <record id="view_account_journal_tree" model="ir.ui.view">
+        <field name="name">account.journal.list</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>

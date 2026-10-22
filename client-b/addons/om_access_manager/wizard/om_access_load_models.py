@@ -31,7 +31,7 @@ class OmAccessLoadModels(models.TransientModel):
 
     def _candidate_models(self):
         self.ensure_one()
-        Menu = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True})
+        Menu = self.env['ir.ui.menu'].sudo()
         menus = self.menu_ids.sudo() or Menu.search([])
         hidden = self.profile_id.hidden_menu_ids
         if hidden:

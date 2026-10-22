@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 18 Cash Forecast',
+    'name': 'Odoo 20 Cash Forecast',
     'version': '1.0.1',
     'category': 'Accounting',
     'summary': 'Forecast the cash balance by week or month from the invoices, bills and expected payments',
@@ -15,8 +15,7 @@ the recurring payments and the expected items entered by hand (salaries, rent, l
     'support': 'odoomates@gmail.com',
     'depends': ['account'],
     'data': [
-        'security/ir.model.access.csv',
-        'security/security.xml',
+        'security/ir.access.csv',
         'views/cash_forecast_item_views.xml',
         'wizard/cash_forecast_report_views.xml',
         'report/report_style.xml',

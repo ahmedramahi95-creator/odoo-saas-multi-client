@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
+from odoo.tools import mute_logger
 
 from .audit import lines_after_transaction
 
@@ -16,8 +17,12 @@ class TestFieldGuard(HttpCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.password = 'om-access-manager-guard-pw'
-        cls.user = new_test_user(cls.env, 'om_access_guard_user', groups='base.group_user,base.group_partner_manager',
-                                 password=cls.password)
+        groups = 'base.group_user,base.group_partner_manager'
+        if cls.env.ref('account.group_account_readonly', raise_if_not_found=False):
+            # reading a contact in full computes the accounting fields of Odoo 20 without a group of their own
+            # (days_sales_outstanding, supplier_invoice_count), which need to read the journal entries
+            groups += ',account.group_account_readonly'
+        cls.user = new_test_user(cls.env, 'om_access_guard_user', groups=groups, password=cls.password)
         Fields = cls.env['ir.model.fields']
         partner_model = cls.env['ir.model']._get('res.partner')
         cls.partner = cls.env['res.partner'].create({
@@ -58,12 +63,9 @@ class TestFieldGuard(HttpCase):
         self.assertIs(result['records'][0]['email'], False)
         rows = self._call('res.partner', 'read', [self.partner.ids, ['name', 'email']])
         self.assertIs(rows[0]['email'], False)
-        # Odoo 19 lets a plain user read only some of the fields of a contact
-        # (the call sessions, for one, are for administrators): name a handful
-        rows = self._call('res.partner', 'read', [self.partner.ids, [
-            'name', 'email', 'phone', 'street', 'city', 'comment', 'parent_id', 'category_id']])
+        rows = self._call('res.partner', 'read', [self.partner.ids])
         self.assertIs(rows[0]['email'], False)
-        rows = self._call('res.partner', 'search_read', [[('id', '=', self.partner.id)], ['name', 'email', 'phone']])
+        rows = self._call('res.partner', 'search_read', [[('id', '=', self.partner.id)]])
         self.assertIs(rows[0]['email'], False)
 
     def test_hidden_values_never_leave_through_a_relation(self):
@@ -73,6 +75,7 @@ class TestFieldGuard(HttpCase):
         self.assertEqual(result[0]['parent_id']['name'], 'Guarded')
         self.assertIs(result[0]['parent_id']['email'], False)
 
+    @mute_logger('odoo.http')
     def test_hidden_fields_cannot_be_used_to_infer_them(self):
         attempts = [
             ('search_read', [[('email', 'ilike', 'secret')]], {'fields': ['name']}),
@@ -110,6 +113,7 @@ class TestFieldGuard(HttpCase):
         self.assertIn('email', self.env['res.partner'].with_user(self.user).search_read(
             [('email', '=', 'secret@example.com')], ['email'])[0])
 
+    @mute_logger('odoo.http')
     def test_blocked_button_cannot_be_called_by_hand(self):
         with lines_after_transaction(self.env) as lines, self.assertRaises(JsonRpcException):
             self._call('res.partner', 'action_archive', [self.partner.ids])
@@ -119,6 +123,7 @@ class TestFieldGuard(HttpCase):
                           for line in lines],
                          [('refused', self.user.id, 'res.partner', 'action_archive', str(self.partner.id))])
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc')
     def test_xmlrpc(self):
         uid = self.user.id
         rows = self.xmlrpc_object.execute_kw(
@@ -126,6 +131,7 @@ class TestFieldGuard(HttpCase):
             [self.partner.ids], {'fields': ['name', 'email']})
         self.assertIs(rows[0]['email'], False)
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc', 'odoo.http')
     def test_blocked_button_through_xmlrpc(self):
         with self.assertRaises(xmlrpc.client.Fault):
             self.xmlrpc_object.execute_kw(
@@ -133,17 +139,20 @@ class TestFieldGuard(HttpCase):
                 [self.partner.ids])
         self.assertTrue(self.partner.active)
 
-    def test_api_key(self):
-        # Odoo 18 has no JSON-2: an API key is used over XML-RPC
+    @mute_logger('odoo.http')
+    def test_json2(self):
         key = self.env['res.users.apikeys'].with_user(self.user)._generate(
             'rpc', 'guard test', datetime.now() + timedelta(days=1))
-        rows = self.xmlrpc_object.execute_kw(
-            self.env.cr.dbname, self.user.id, key, 'res.partner', 'read',
-            [self.partner.ids], {'fields': ['name', 'email']})
-        self.assertIs(rows[0]['email'], False)
-        with self.assertRaises(xmlrpc.client.Fault):
-            self.xmlrpc_object.execute_kw(
-                self.env.cr.dbname, self.user.id, key, 'res.partner', 'action_archive', [self.partner.ids])
+        headers = {'Authorization': f'bearer {key}', 'X-Odoo-Database': self.env.cr.dbname}
+        response = self.url_open('/json/2/res.partner/read', json={
+            'ids': self.partner.ids, 'fields': ['name', 'email'],
+        }, headers=headers)
+        self.assertEqual(response.status_code, 200, response.text[:300])
+        self.assertIs(response.json()[0]['email'], False)
+        response = self.url_open('/json/2/res.partner/action_archive', json={
+            'ids': self.partner.ids,
+        }, headers=headers)
+        self.assertNotEqual(response.status_code, 200)
         self.assertTrue(self.partner.active)
 
     def test_search_filters_on_a_hidden_field_go_with_it(self):

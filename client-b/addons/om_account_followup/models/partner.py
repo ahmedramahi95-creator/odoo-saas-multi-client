@@ -63,14 +63,6 @@ class ResPartner(models.Model):
         'followup.line', compute='_get_latest', compute_sudo=True,
         string="Latest Follow-up Level", help="The maximum follow-up level"
     )
-    # kept for the customisations of 19.0 that use them: the level is the one above
-    latest_followup_level_id_without_lit = fields.Many2one(
-        'followup.line', compute='_get_latest', compute_sudo=True,
-        string="Latest Follow-up Level without litigation")
-    latest_followup_sequence = fields.Integer(
-        'Sequence',
-        help="Gives the sequence order when displaying a list of follow-up lines.", default=0
-    )
     payment_amount_due = fields.Float(
         compute='_get_amounts_and_date',
         string="Amount Due", search='_payment_due_search'
@@ -84,6 +76,10 @@ class ResPartner(models.Model):
         search='_payment_earliest_date_search'
     )
 
+    followup_plan_id = fields.Many2one(
+        'followup.followup', string='Follow-up Plan', company_dependent=True, tracking=True,
+        domain="[('company_id', '=', current_company_id)]",
+        help="The reminders sent to this customer. Leave empty for the default plan of the company.")
     followup_excluded = fields.Boolean(
         string='Excluded from Follow-ups', company_dependent=True, tracking=True,
         help="No reminder is sent to this customer.")
@@ -93,15 +89,17 @@ class ResPartner(models.Model):
         help="The customer promised to pay by this date: no reminder is sent until then.")
     followup_promise_amount = fields.Float(
         string='Promised Amount', company_dependent=True, tracking=True, digits='Account')
+    # computed as superuser: a user without accounting rights reading a contact in full (an export, the API,
+    # another app's screen) is not refused for the follow-up plans and journal items they are computed from
     followup_status = fields.Selection(
         FOLLOWUP_STATUSES, string='Follow-up Status', compute='_compute_followup_status',
-        search='_search_followup_status')
+        search='_search_followup_status', compute_sudo=True)
     followup_next_date = fields.Date(
-        string='Next Reminder', compute='_compute_followup_status',
+        string='Next Reminder', compute='_compute_followup_status', compute_sudo=True,
         help="The day the next reminder is due, from the due dates of the open invoices and the delays of the "
              "follow-up plan.")
     followup_level_due_id = fields.Many2one(
-        'followup.line', string='Reminder Due', compute='_compute_followup_status',
+        'followup.line', string='Reminder Due', compute='_compute_followup_status', compute_sudo=True,
         help="The level of the reminder to send now.")
     followup_currency_id = fields.Many2one('res.currency', compute='_compute_followup_currency')
 
@@ -110,9 +108,9 @@ class ResPartner(models.Model):
     # -------------------------------------------------------------------------
 
     def _followup_plan(self):
-        """ :return: the plan of the customer in the current company: the one of the company """
+        """ :return: the plan of the customer in the current company """
         self.ensure_one()
-        return self.env['followup.followup']._get_default_plan()
+        return self.followup_plan_id or self.env['followup.followup']._get_default_plan()
 
     def _followup_state(self, date=None):
         """ Where each customer stands in its follow-up plan, in the current company.
@@ -203,9 +201,6 @@ class ResPartner(models.Model):
             partner.followup_level_due_id = values['level_due']
 
     def _search_followup_status(self, operator, value):
-        return self._followup_search(operator, value, self._followup_status_search)
-
-    def _followup_status_search(self, operator, value):
         if operator not in ('in', '='):
             return NotImplemented
         values = {value} if operator == '=' else set(value)
@@ -261,7 +256,6 @@ class ResPartner(models.Model):
                     latest_date = aml.followup_date
             partner.latest_followup_date = latest_date
             partner.latest_followup_level_id = latest_level
-            partner.latest_followup_level_id_without_lit = latest_level
 
     @api.depends_context('company')
     def _get_amounts_and_date(self):
@@ -282,19 +276,6 @@ class ResPartner(models.Model):
             partner.payment_amount_due = amount_due
             partner.payment_amount_overdue = amount_overdue
             partner.payment_earliest_due_date = worst_due_date
-
-    def _followup_search(self, operator, operand, search):
-        """ Odoo 18 gives the search methods the operator as written: bring '=', '!='
-        and 'not in' down to 'in' and negate the result, as the ORM of 19 does. """
-        negate = operator in ('!=', 'not in')
-        if operator in ('=', '!='):
-            operand = [operand]
-        if operator in ('=', '!=', 'not in'):
-            operator = 'in'
-        domain = search(operator, operand)
-        if domain is NotImplemented:
-            raise UserError(_('Operator %s is not supported for this search.', operator))
-        return ['!', *domain] if negate else domain
 
     def _followup_having_condition(self, expression, operator, value):
         """ SQL condition comparing the aggregate `expression` to `value`, or
@@ -352,13 +333,9 @@ class ResPartner(models.Model):
         return [('id', 'in', [x[0] for x in self.env.cr.fetchall()])]
 
     def _payment_overdue_search(self, operator, operand):
-        return self._followup_search(
-            operator, operand, lambda op, value: self._followup_amount_search(op, value, overdue_only=True))
+        return self._followup_amount_search(operator, operand, overdue_only=True)
 
     def _payment_earliest_date_search(self, operator, operand):
-        return self._followup_search(operator, operand, self._followup_earliest_date_search)
-
-    def _followup_earliest_date_search(self, operator, operand):
         having = self._followup_having_condition(
             SQL("MIN(COALESCE(l.date_maturity, l.date))"), operator, operand)
         if having is NotImplemented:
@@ -384,8 +361,7 @@ class ResPartner(models.Model):
         return domain
 
     def _payment_due_search(self, operator, operand):
-        return self._followup_search(
-            operator, operand, lambda op, value: self._followup_amount_search(op, value, overdue_only=False))
+        return self._followup_amount_search(operator, operand, overdue_only=False)
 
     # -------------------------------------------------------------------------
     # Open items
@@ -552,13 +528,6 @@ class ResPartner(models.Model):
             })
         return attachments
 
-    def _followup_chatter(self):
-        """ The customers, to post on and schedule activities on: the follow-ups ask for the right to read
-        them only. Posting on a contact in 19.0 asks for the right to edit it, which an accountant may not have.
-        """
-        self.check_access('read')
-        return self.sudo()
-
     def _followup_send_email(self, template=None, subject=None, body=None, recipients=None,
                              attach_invoices=False):
         """ Send a reminder email to the customer and keep it in the chatter.
@@ -580,7 +549,7 @@ class ResPartner(models.Model):
         # a rendered template, or the body edited in the reminder dialog
         body = body if isinstance(body, Markup) else Markup(body or '')
         attachments = self._followup_invoice_attachments() if attach_invoices else self.env['ir.attachment']
-        self._followup_chatter().with_context(mail_post_autofollow=False).message_post(
+        self.with_context(mail_post_autofollow=False).message_post(
             body=body,
             subject=subject,
             partner_ids=recipients.ids,
@@ -599,13 +568,13 @@ class ResPartner(models.Model):
         existing = self.activity_ids.filtered(lambda activity: activity.activity_type_id == activity_type)
         note = level.manual_action_note or level.name
         if existing:
-            existing[:1].sudo().write({
+            existing[:1].write({
                 'summary': level.name,
                 'note': Markup('%s<br/>%s') % (existing[:1].note or '', note),
                 'user_id': user.id,
             })
             return existing[:1]
-        return self._followup_chatter().activity_schedule(
+        return self.activity_schedule(
             'om_account_followup.mail_activity_type_followup',
             date_deadline=fields.Date.context_today(self),
             summary=level.name,
@@ -646,7 +615,7 @@ class ResPartner(models.Model):
                     result['emails'] += 1
                 else:
                     result['unknown_emails'] |= partner
-                    partner._followup_chatter().activity_schedule(
+                    partner.activity_schedule(
                         'om_account_followup.mail_activity_type_followup',
                         date_deadline=date,
                         summary=_('Reminder not sent'),
@@ -658,7 +627,7 @@ class ResPartner(models.Model):
             if level.manual_action and not self.env.context.get('followup_skip_actions'):
                 partner._followup_schedule_action(level)
                 result['actions'] |= partner
-            partner._followup_chatter().message_post(body=_('Follow-up reminder sent: %s', level.name))
+            partner.message_post(body=_('Follow-up reminder sent: %s', level.name))
         return result
 
     # -------------------------------------------------------------------------
@@ -685,7 +654,7 @@ class ResPartner(models.Model):
             template = level.email_template_id if level and level.send_email else None
             if not partner._followup_send_email(template):
                 unknown_mails += 1
-                partner._followup_chatter().activity_schedule(
+                partner.activity_schedule(
                     'om_account_followup.mail_activity_type_followup',
                     date_deadline=fields.Date.context_today(self),
                     summary=_('Reminder not sent'),
@@ -743,13 +712,13 @@ class ResPartner(models.Model):
     def action_followup_print_statement(self):
         partners = self._statement_partners('customer')
         for partner in partners:
-            partner._followup_chatter().message_post(body=_('Customer statement printed'))
+            partner.message_post(body=_('Customer statement printed'))
         return partners._followup_statement_action()
 
     def action_print_vendor_statement(self):
         partners = self._statement_partners('vendor')
         for partner in partners:
-            partner._followup_chatter().message_post(body=_('Vendor statement printed'))
+            partner.message_post(body=_('Vendor statement printed'))
         return partners._followup_statement_action('vendor')
 
     def action_send_customer_statement(self):

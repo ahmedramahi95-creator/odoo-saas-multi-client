@@ -1,5 +1,6 @@
 import ast
-from odoo import api, models, fields
+from odoo import api, models
+from odoo.fields import Domain
 
 
 class AccountMoveLine(models.Model):
@@ -14,7 +15,7 @@ class AccountMoveLine(models.Model):
     def _query_get(self, domain=None):
         self.check_access('read')
 
-        context = dict(self._context or {})
+        context = dict(self.env.context or {})
         domain = domain or []
         if not isinstance(domain, (list, tuple)):
             domain = ast.literal_eval(domain)
@@ -26,7 +27,8 @@ class AccountMoveLine(models.Model):
             domain += [(date_field, '<=', context['date_to'])]
         if context.get('date_from'):
             if not context.get('strict_range'):
-                domain += ['|', (date_field, '>=', context['date_from']), ('account_id.include_initial_balance', '=', True)]
+                domain += ['|', (date_field, '>=', context['date_from']),
+                           ('account_id.include_initial_balance', '=', True)]
             elif context.get('initial_bal'):
                 domain += [(date_field, '<', context['date_from'])]
             else:
@@ -54,16 +56,15 @@ class AccountMoveLine(models.Model):
             domain += [('company_id', 'in', self._branch_ids(self.env.company.id))]
 
         if context.get('reconcile_date'):
-            domain += ['|', ('reconciled', '=', False), '|', ('matched_debit_ids.max_date', '>', context['reconcile_date']), ('matched_credit_ids.max_date', '>', context['reconcile_date'])]
+            domain += ['|', ('reconciled', '=', False), '|',
+                       ('matched_debit_ids.max_date', '>', context['reconcile_date']),
+                       ('matched_credit_ids.max_date', '>', context['reconcile_date'])]
 
         if context.get('account_tag_ids'):
             domain += [('account_id.tag_ids', 'in', context['account_tag_ids'].ids)]
 
         if context.get('account_ids'):
             domain += [('account_id', 'in', context['account_ids'].ids)]
-
-        if context.get('analytic_tag_ids'):
-            domain += [('analytic_tag_ids', 'in', context['analytic_tag_ids'].ids)]
 
         if context.get('analytic_account_ids'):
             domain += [('analytic_distribution', 'in', context['analytic_account_ids'].ids)]
@@ -82,13 +83,12 @@ class AccountMoveLine(models.Model):
             domain.append(('parent_state', '!=', 'cancel'))
             if context.get('tax_exigible'):
                 # the tax report: a cash basis tax is due when it is paid, on its cash basis entry
-                domain = expression.AND([domain, self._get_tax_exigible_domain()])
+                domain = Domain(domain) & self._get_tax_exigible_domain()
 
-            query = self._where_calc(domain)
-            self._apply_ir_rules(query)
-            from_string, from_params = query.from_clause
-            where_string, where_params = query.where_clause
-            tables, where_clause, where_clause_params = from_string, where_string, from_params + where_params
+            query = self._search(domain)
+            tables, from_params, _to_flush = query.from_clause._sql_tuple
+            where_clause, where_params, _to_flush = query.where_clause._sql_tuple
+            where_clause_params = list(from_params) + list(where_params)
         return tables, where_clause, where_clause_params
 
     def format_analytic_distribution(self, distribution):

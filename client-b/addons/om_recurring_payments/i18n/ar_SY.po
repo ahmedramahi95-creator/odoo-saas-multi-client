@@ -185,13 +185,13 @@ msgstr ""
 
 #. module: om_recurring_payments
 #: model:ir.module.module,shortdesc:base.module_om_recurring_payments
-msgid "Odoo 19 Recurring Payment"
+msgid "Odoo 20 Recurring Payment"
 msgstr ""
 
 #. module: om_recurring_payments
 #: model:ir.module.module,description:base.module_om_recurring_payments
 msgid ""
-"Odoo 19 Recurring Payment, Recurring Payment In Odoo, Odoo 19 Accounting"
+"Odoo 20 Recurring Payment, Recurring Payment In Odoo, Odoo 20 Accounting"
 msgstr ""
 
 #. module: om_recurring_payments

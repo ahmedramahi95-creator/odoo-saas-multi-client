@@ -227,7 +227,7 @@ class TestCheckFormat(AccountTestInvoicingCommon):
                                            self.env.company, bank_account=self.env['res.partner.bank'])
         self.bank.bank_account_id = self.env['res.partner.bank'].create({
             'partner_id': self.env.company.partner_id.id,
-            'acc_number': '555-666-777',
+            'account_number': '555-666-777',
             'clearing_number': '011000015',
         })
         bill, payment = self._pay_bill()

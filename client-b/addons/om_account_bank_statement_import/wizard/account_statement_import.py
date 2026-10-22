@@ -2,7 +2,7 @@ import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.addons.base.models.res_bank import sanitize_account_number
+from odoo.addons.base.models.res_partner_bank import sanitize_account_number
 
 from ..parsers import camt, csv_file, mt940, ofx, qif
 
@@ -80,7 +80,7 @@ class AccountStatementImport(models.TransientModel):
             matching = self.env['account.journal'].search([
                 ('type', 'in', ('bank', 'cash')),
                 ('company_id', 'in', self.env.companies.ids),
-                ('bank_account_id.sanitized_acc_number', '=', sanitized),
+                ('bank_account_id.sanitized_account_number', '=', sanitized),
             ], limit=1)
             if matching and journal and matching != journal:
                 raise UserError(_(
@@ -195,7 +195,7 @@ class AccountStatementImport(models.TransientModel):
         if skipped:
             message = _('%(imported)s transaction(s) imported, %(skipped)s already there.',
                         imported=len(statements.line_ids), skipped=skipped)
-            self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {
+            self.env.user._bus_send('simple_notification', {
                 'type': 'info', 'message': message,
             })
         return action

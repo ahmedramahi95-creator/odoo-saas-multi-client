@@ -12,10 +12,9 @@ class IrFilters(models.Model):
                 _("Your access profile does not allow saving searches."), model=self._name)
 
     @api.model
-    def create_or_replace(self, vals):
-        # saving a search from the web client, on Odoo 18
+    def create_filter(self, vals):
         self._om_check_favorites()
-        return super().create_or_replace(vals)
+        return super().create_filter(vals)
 
     @api.model_create_multi
     def create(self, vals_list):

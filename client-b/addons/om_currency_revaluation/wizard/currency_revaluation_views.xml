@@ -67,6 +67,6 @@
               sequence="30"
               action="action_currency_revaluation"
               groups="account.group_account_user,account.group_account_manager"
-              parent="om_fiscal_year.menu_account_closing"/>
+              parent="account.account_closing_menu"/>
 
 </odoo>

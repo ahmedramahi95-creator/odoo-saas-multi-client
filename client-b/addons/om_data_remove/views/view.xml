@@ -23,10 +23,10 @@
                     </p>
                     <field name="summary" nolabel="1" readonly="1"/>
                     <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
-                        <button name="action_open_clear" type="object" string="Clear All Transactions" icon="fa-trash"
+                        <button name="action_open_clear" type="object" string="Clear All Transactions" icon="delete"
                                 class="btn-danger" invisible="not total_count"/>
                         <span class="text-muted" invisible="total_count">There is no transaction left to delete.</span>
-                        <button name="action_table_report" type="object" string="Database Tables" icon="fa-database"
+                        <button name="action_table_report" type="object" string="Database Tables" icon="database"
                                 class="btn-secondary ms-auto"/>
                     </div>
                     <field name="total_count" invisible="1"/>
@@ -118,7 +118,7 @@
                     </group>
                     <div class="d-flex align-items-center mb-2">
                         <h4 class="mb-0">What is left, table by table</h4>
-                        <button name="action_view_tables" type="object" string="Search the Tables" icon="fa-search"
+                        <button name="action_view_tables" type="object" string="Search the Tables" icon="search"
                                 class="btn-secondary ms-auto"/>
                     </div>
                     <field name="nonempty_line_ids" nolabel="1" readonly="1">
@@ -133,7 +133,7 @@
                             <field name="deleted_count" optional="show" column_invisible="not parent.cleared"/>
                             <field name="error" optional="show" column_invisible="not parent.cleared"/>
                             <field name="can_delete" column_invisible="1"/>
-                            <button name="action_delete_rows" type="object" string="Delete Rows" icon="fa-trash"
+                            <button name="action_delete_rows" type="object" string="Delete Rows" icon="delete"
                                     class="btn-link text-danger" invisible="not can_delete"/>
                         </list>
                     </field>
@@ -174,7 +174,7 @@
             <list create="0" edit="0" delete="0" decoration-danger="kind == 'transaction' and row_count"
                   decoration-muted="kind in ('technical', 'framework')">
                 <header>
-                    <button name="action_delete_rows" type="object" string="Delete Rows" icon="fa-trash"
+                    <button name="action_delete_rows" type="object" string="Delete Rows" icon="delete"
                             class="btn-danger"/>
                 </header>
                 <field name="table_name"/>
@@ -186,7 +186,7 @@
                 <field name="deleted_count" optional="show"/>
                 <field name="error" optional="hide"/>
                 <field name="can_delete" column_invisible="1"/>
-                <button name="action_delete_rows" type="object" string="Delete Rows" icon="fa-trash"
+                <button name="action_delete_rows" type="object" string="Delete Rows" icon="delete"
                         class="btn-link text-danger" invisible="not can_delete"/>
             </list>
         </field>

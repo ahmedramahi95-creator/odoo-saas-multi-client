@@ -34,10 +34,10 @@ test("a sent WhatsApp shows its icon and status", async () => {
     const partnerId = await prepare("sent");
     await start();
     await openFormView("res.partner", partnerId);
-    await contains(".o-mail-Message-notification i.fa-whatsapp");
+    await contains(".o-mail-Message-notification i[data-icon='oi_whatsapp']");
     await contains(".o-mail-Message-notification", { text: "WhatsApp" });
     await click(".o-mail-Message-notification");
-    await contains(".o-mail-MessageNotificationPopover i.fa-check[title='Delivered']");
+    await contains(".o-mail-MessageNotificationPopover [title='Delivered'][data-icon='check']");
 });
 
 test("a failed WhatsApp of the user offers to send it again", async () => {
@@ -49,7 +49,7 @@ test("a failed WhatsApp of the user offers to send it again", async () => {
     });
     await start();
     await openFormView("res.partner", partnerId);
-    await contains(".o-mail-Message-notification.text-danger i");
+    await contains(".o-mail-Message-notification.text-danger i[data-icon='cancel']");
     await click(".o-mail-Message-notification");
     await contains(".modal-title", { text: "WhatsApp not sent" });
     await click(".modal-footer button", { text: "Send Again" });
@@ -61,14 +61,14 @@ test("the ticks of a WhatsApp: one when sent, two when delivered", async () => {
     const pendingId = await prepare("pending");
     await start();
     await openFormView("res.partner", pendingId);
-    await contains(".o-om-whatsapp-ticks i.fa-check", { count: 1 });
+    await contains(".o-om-whatsapp-ticks i[data-icon='check']", { count: 1 });
 });
 
 test("two ticks when delivered", async () => {
     const sentId = await prepare("sent");
     await start();
     await openFormView("res.partner", sentId);
-    await contains(".o-om-whatsapp-ticks[title='Delivered'] i.fa-check", { count: 2 });
+    await contains(".o-om-whatsapp-ticks[title='Delivered'] i[data-icon='check']", { count: 2 });
 });
 
 test("no ticks while queued or failed", async () => {

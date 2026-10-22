@@ -9,7 +9,7 @@ class AccountBankStatementLine(models.Model):
         help="The identifier of the transaction in the file it was imported from: a transaction already "
              "imported in the journal is not imported again.")
 
-    _sql_constraints = [
-        ('unique_import_id_uniq', 'UNIQUE(unique_import_id)',
-         'A transaction of a bank statement file is only imported once.'),
-    ]
+    _unique_import_id_uniq = models.Constraint(
+        'UNIQUE(unique_import_id)',
+        'A transaction of a bank statement file is only imported once.',
+    )

@@ -16,8 +16,6 @@ class TestCashFlow(AccountTestInvoicingCommon):
         cls.bank_2 = cls.env['account.journal'].create({
             'name': 'Second Bank', 'code': 'BNK2', 'type': 'bank'}).default_account_id
         cls.transit = cls.bank_journal.suspense_account_id
-        # the suspense account of the test chart of 19.0 does not allow reconciliation
-        cls.transit.reconcile = True
         Account = cls.env['account.account']
         cls.equipment = Account.create({'code': 'EQUIP', 'name': 'Equipment', 'account_type': 'asset_fixed'})
         cls.loan = Account.create({'code': 'LOAN', 'name': 'Bank Loan', 'account_type': 'liability_non_current'})

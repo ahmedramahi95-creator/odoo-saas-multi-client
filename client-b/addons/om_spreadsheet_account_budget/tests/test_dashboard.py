@@ -33,7 +33,7 @@ class TestDashboardInBrowser(AccountTestInvoicingHttpCommon):
     def _accountant_admin(self):
         self.env.ref('base.user_admin').write({
             'company_id': self.env.company.id, 'company_ids': [Command.set(self.env.company.ids)],
-            'groups_id': [Command.link(self.env.ref('account.group_account_user').id),
+            'group_ids': [Command.link(self.env.ref('account.group_account_user').id),
                           Command.link(self.env.ref('account.group_account_manager').id)],
         })
 
@@ -41,15 +41,14 @@ class TestDashboardInBrowser(AccountTestInvoicingHttpCommon):
         self._accountant_admin()
         today = fields.Date.today()
         year_start, year_end = today.replace(month=1, day=1), today.replace(month=12, day=31)
-        position = self.env['account.budget.post'].create({
-            'name': 'Costs',
+        position = self.env['account.budget.position'].create({
+            'name': 'Costs', 'budget_type': 'expense',
             'account_ids': [Command.set(self.company_data['default_account_expense'].ids)],
         })
-        # the budgets plan the expenses negative
-        budget = self.env['crossovered.budget'].create({
+        budget = self.env['account.budget'].create({
             'name': 'Budget', 'date_from': year_start, 'date_to': year_end,
-            'crossovered_budget_line': [Command.create({
-                'general_budget_id': position.id, 'planned_amount': -1000.0,
+            'line_ids': [Command.create({
+                'name': 'Costs', 'position_id': position.id, 'planned_amount': 1000.0,
                 'date_from': year_start, 'date_to': year_end,
             })],
         })

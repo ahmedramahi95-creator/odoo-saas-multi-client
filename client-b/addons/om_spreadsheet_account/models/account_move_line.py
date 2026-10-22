@@ -1,4 +1,5 @@
 from odoo import api, fields, models
+from odoo.addons.spreadsheet.utils.helpers import spreadsheet_safe_batch
 
 
 class AccountMoveLine(models.Model):
@@ -6,6 +7,7 @@ class AccountMoveLine(models.Model):
 
     @api.readonly
     @api.model
+    @spreadsheet_safe_batch
     def om_spreadsheet_fetch_balance(self, args_list):
         """ Balances of the OM.ACCOUNT.BALANCE spreadsheet formula, for the companies selected by the user.
 

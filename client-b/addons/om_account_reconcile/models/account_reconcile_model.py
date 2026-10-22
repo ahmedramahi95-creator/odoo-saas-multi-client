@@ -6,33 +6,6 @@ from odoo import models
 class AccountReconcileModel(models.Model):
     _inherit = 'account.reconcile.model'
 
-    # Odoo 18 has the rules of the reconciliation models in its core: the rules matching the open items
-    # (rule_type invoice_matching, with the payment tolerance and the matching order) and the counterpart
-    # models (writeoff_button, writeoff_suggestion). The screen and the automatic reconciliation use them.
-    # The partner mapping lines of the matching rules give the partner of a transaction without one.
-
-    def _om_get_tolerance(self, residual):
-        """ :return: the payment tolerance of the rule, as an amount in the currency of `residual` """
-        self.ensure_one()
-        if not self.allow_payment_tolerance:
-            return 0.0
-        if self.payment_tolerance_type == 'fixed_amount':
-            return self.payment_tolerance_param
-        return abs(residual) * self.payment_tolerance_param / 100.0
-
-    def _om_get_mapped_partner(self, st_line):
-        """ :return: the partner of the first partner mapping line matching the label or the notes of the
-                     transaction, as the core reconciliation of Odoo 18 does """
-        self.ensure_one()
-        for mapping in self.partner_mapping_line_ids:
-            label_ok = not mapping.payment_ref_regex or (
-                st_line.payment_ref and re.match(mapping.payment_ref_regex, st_line.payment_ref))
-            notes_ok = not mapping.narration_regex or (
-                st_line.narration and re.match(mapping.narration_regex, str(st_line.narration)))
-            if label_ok and notes_ok:
-                return mapping.partner_id
-        return self.env['res.partner']
-
     def _om_label_texts(self, st_line):
         texts = [st_line.payment_ref or '']
         if st_line.transaction_details:
@@ -74,7 +47,7 @@ class AccountReconcileModel(models.Model):
     def _om_get_proposal(self, st_line):
         """ Proposal (see `account.bank.statement.line._om_reconcile`) of the model for the transaction. """
         self.ensure_one()
-        if self.rule_type == 'invoice_matching':
+        if self.rule_type == 'matching_rule':
             return self._om_get_matching_rule_proposal(st_line)
         return {'writeoffs': self._om_get_writeoffs(st_line)}
 
@@ -109,8 +82,7 @@ class AccountReconcileModel(models.Model):
                 'account_id': line.account_id.id,
                 'amount': amount,
                 'label': line.label or st_line.payment_ref,
-                # a line of a model has no partner on Odoo 18: the one of the transaction
-                'partner_id': st_line.partner_id.id,
+                'partner_id': (line.partner_id or st_line.partner_id).id,
                 'tax_ids': line.tax_ids.ids,
                 'tax_included': bool(line.tax_ids),
                 'analytic_distribution': line.analytic_distribution or False,
@@ -161,7 +133,8 @@ class AccountReconcileModel(models.Model):
             ),
         )
         amls = amls.filtered(lambda aml: (aml.amount_residual > 0) == (residual > 0))
-        tolerance = self._om_get_tolerance(residual)
+        tolerance = (self.payment_tolerance if self.payment_tolerance_type == 'amount'
+                     else abs(residual) * self.payment_tolerance / 100.0)
 
         selected = self.env['account.move.line']
         total = 0.0

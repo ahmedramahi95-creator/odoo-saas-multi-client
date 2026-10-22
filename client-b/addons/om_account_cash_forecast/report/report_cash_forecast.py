@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.fields import Domain
 
 RECEIPT_ROWS = ('customers', 'recurring_in', 'expected_in', 'transit_in', 'bank_in')
 PAYMENT_ROWS = ('suppliers', 'recurring_out', 'expected_out', 'transit_out', 'bank_out')
@@ -52,23 +53,23 @@ class ReportCashForecast(models.AbstractModel):
         currency = company.currency_id
         MoveLine = self.env['account.move.line']
         items = []
-        company_domain = [('company_id', 'child_of', company.id)]
+        company_domain = Domain('company_id', 'child_of', company.id)
 
         # open invoices and bills, on their due date
         states = ('posted', 'draft') if wizard.include_drafts else ('posted',)
         partner_lines = MoveLine.search(
             company_domain
-            + [('account_id.account_type', 'in', ('asset_receivable', 'liability_payable')),
-               ('parent_state', 'in', states),
-               ('reconciled', '=', False),
-               ('display_type', '=', 'payment_term')]
+            & Domain('account_id.account_type', 'in', ('asset_receivable', 'liability_payable'))
+            & Domain('parent_state', 'in', states)
+            & Domain('reconciled', '=', False)
+            & Domain('display_type', '=', 'payment_term')
         )
         partner_lines |= MoveLine.search(
             company_domain
-            + [('account_id.account_type', 'in', ('asset_receivable', 'liability_payable')),
-               ('parent_state', '=', 'posted'),
-               ('reconciled', '=', False),
-               ('display_type', '!=', 'payment_term')]
+            & Domain('account_id.account_type', 'in', ('asset_receivable', 'liability_payable'))
+            & Domain('parent_state', '=', 'posted')
+            & Domain('reconciled', '=', False)
+            & Domain('display_type', '!=', 'payment_term')
         )
         for line in partner_lines:
             amount = line.amount_residual if line.parent_state == 'posted' else line.balance
@@ -84,9 +85,8 @@ class ReportCashForecast(models.AbstractModel):
         # payments registered but not in the bank yet
         transit_accounts = self._get_transit_accounts(company)
         if transit_accounts:
-            for line in MoveLine.search(company_domain + [('account_id', 'in', transit_accounts.ids),
-                                                          ('parent_state', '=', 'posted'),
-                                                          ('reconciled', '=', False)]):
+            for line in MoveLine.search(company_domain & Domain('account_id', 'in', transit_accounts.ids)
+                                        & Domain('parent_state', '=', 'posted') & Domain('reconciled', '=', False)):
                 if not currency.is_zero(line.amount_residual):
                     items.append({
                         'date': line.date,
@@ -96,10 +96,9 @@ class ReportCashForecast(models.AbstractModel):
                     })
 
         # bank and cash entries already recorded with a date in the forecast
-        for line in MoveLine.search(company_domain + [('account_id.account_type', '=', 'asset_cash'),
-                                                      ('parent_state', '=', 'posted'),
-                                                      ('date', '>=', wizard.date_from),
-                                                      ('date', '<=', date_to)]):
+        for line in MoveLine.search(company_domain & Domain('account_id.account_type', '=', 'asset_cash')
+                                    & Domain('parent_state', '=', 'posted') & Domain('date', '>=', wizard.date_from)
+                                    & Domain('date', '<=', date_to)):
             if not currency.is_zero(line.balance):
                 items.append({
                     'date': line.date,

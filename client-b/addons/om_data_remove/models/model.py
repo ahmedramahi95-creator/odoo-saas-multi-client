@@ -5,12 +5,12 @@ from markupsafe import Markup
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
-from odoo.service.model import PG_CONCURRENCY_EXCEPTIONS_TO_RETRY
+from odoo.sql_db import PG_CONCURRENCY_EXCEPTIONS_TO_RETRY
 from odoo.tools import SQL
 
 _logger = logging.getLogger(__name__)
 
-# The transactions of the standard Odoo 18 applications: the documents a company records day after day.
+# The transactions of the standard Odoo 20 applications: the documents a company records day after day.
 # The master data they point to (partners, products, chart of accounts, journals, taxes, employees, bills of
 # materials, projects, configuration) is kept. The models of applications that are not installed are skipped.
 # Within a group the lines come before their document, but the order does not have to be right: a table the
@@ -27,16 +27,12 @@ TRANSACTION_GROUPS = [
         'purchase.order.line', 'purchase.order', 'purchase.requisition.line', 'purchase.requisition',
     ]),
     ('inventory', 'Inventory', [
-        # stock.valuation.layer, stock.package_level and stock.quant.package are the ones of Odoo 18
-        'stock.valuation.adjustment.lines', 'stock.landed.cost.lines', 'stock.landed.cost', 'stock.valuation.layer',
-        'stock.package_level', 'stock.move.line', 'stock.move', 'stock.quant', 'stock.quant.package', 'stock.package',
-        'stock.picking', 'stock.picking.batch', 'stock.lot', 'stock.reference',
+        'stock.valuation.adjustment.lines', 'stock.landed.cost.lines', 'stock.landed.cost',
+        'stock.move.line', 'stock.move', 'stock.quant', 'stock.package', 'stock.picking', 'stock.picking.batch',
+        'stock.lot', 'stock.reference',
     ]),
     ('mrp', 'Manufacturing', ['mrp.workcenter.productivity', 'mrp.workorder', 'mrp.unbuild', 'mrp.production']),
-    # the expense reports (hr.expense.sheet) are the ones of Odoo 18
-    ('hr', 'Employees', [
-        'hr.expense', 'hr.expense.sheet', 'hr.leave', 'hr.leave.allocation', 'hr.attendance', 'hr.applicant',
-    ]),
+    ('hr', 'Employees', ['hr.expense', 'hr.leave', 'hr.leave.allocation', 'hr.attendance', 'hr.applicant']),
     ('crm', 'CRM', ['crm.lead']),
     ('project', 'Projects', ['project.update', 'project.task', 'project.task.recurrence']),
     ('repair', 'Repairs', ['repair.order']),
@@ -256,7 +252,7 @@ class OmDataRemove(models.TransientModel):
                     errors[table] = error
         self.env.invalidate_all()
         # the XML ids of the deleted records are gone: forget the lookups cached for them
-        self.env.registry.clear_cache()
+        self.env.transaction.invalidate_ormcache()
         return {'deleted': deleted, 'errors': errors}
 
     @api.model
@@ -333,7 +329,7 @@ class OmDataRemoveReport(models.TransientModel):
     row_count = fields.Integer(string='Rows Left', readonly=True)
     transaction_row_count = fields.Integer(string='Transaction Rows Left', readonly=True)
     line_ids = fields.One2many('om.data.remove.table', 'report_id', string='All Tables')
-    nonempty_line_ids = fields.One2many('om.data.remove.table', 'report_id', string='Tables Holding Rows',
+    nonempty_line_ids = fields.One2many('om.data.remove.table', 'report_id', string='Non-Empty Tables',
                                         domain=[('row_count', '>', 0), ('kind', 'in', LISTED_KINDS)])
 
     def _compute_display_name(self):

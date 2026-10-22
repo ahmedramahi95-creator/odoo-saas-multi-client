@@ -2,8 +2,8 @@ import logging
 
 from dateutil.relativedelta import relativedelta
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError, ValidationError
-from odoo.tools import SQL, format_date
+from odoo.exceptions import LockError, UserError, ValidationError
+from odoo.tools import format_date
 
 _logger = logging.getLogger(__name__)
 
@@ -25,7 +25,6 @@ class RecurringPayment(models.Model):
     currency_id = fields.Many2one('res.currency', string='Currency', required=True,
                                   compute='_compute_currency_id', store=True, readonly=False, precompute=True)
     amount = fields.Monetary(string="Amount", currency_field='currency_id', tracking=True)
-    # stored: a journal chosen on the recurring payment used to be written on its template
     journal_id = fields.Many2one('account.journal', 'Journal', required=True, check_company=True,
                                  domain=[('type', 'in', ('bank', 'cash'))], tracking=True,
                                  compute='_compute_journal_id', store=True, readonly=False, precompute=True)
@@ -54,12 +53,10 @@ class RecurringPayment(models.Model):
             rec.has_error = any(rec.line_ids.mapped('error_message'))
 
     def _search_has_error(self, operator, value):
-        # Odoo 18 gives the operator as written: ('=', True) is ('in', [True]) for the ORM of 19
-        if operator in ('=', '!='):
-            operator, value = ('in' if operator == '=' else 'not in'), [value]
         if operator not in ('in', 'not in'):
-            raise UserError(_('Operator %s is not supported for this search.', operator))
-        domain = [('line_ids', 'any', [('error_message', '!=', False)])]
+            return NotImplemented
+        failed = self.env['recurring.payment.line']._search([('error_message', '!=', False)])
+        domain = [('line_ids', 'any', failed)]
         return domain if (operator == 'in') == (True in value) else ['!'] + domain
 
     @api.depends('template_id')
@@ -110,7 +107,6 @@ class RecurringPayment(models.Model):
             if rec.recurring_interval <= 0:
                 raise UserError(_('The recurring interval of template %s must be a positive number.',
                                   rec.template_id.display_name))
-            # the end date is included: a payment due on it is created too
             date_begin = rec.date_begin
             while date_begin <= rec.date_end:
                 date = date_begin
@@ -139,7 +135,6 @@ class RecurringPayment(models.Model):
             ('recurring_payment_id.state', '=', 'done'),
         ], order='date, id')
         for line in line_ids:
-            # a line that cannot be paid must not stop the payments of the others
             try:
                 with self.env.cr.savepoint():
                     line.with_company(line.company_id).action_create_payment()
@@ -224,11 +219,9 @@ class RecurringPaymentLine(models.Model):
 
     def action_create_payment(self):
         # a concurrent click or cron run holding the line makes this one fail instead of paying twice
-        ids = tuple(self.ids)
-        locked = self.env.execute_query(SQL(
-            "SELECT id FROM %s WHERE id IN %s FOR UPDATE SKIP LOCKED", SQL.identifier(self._table), ids,
-        )) if ids else []
-        if len(locked) != len(ids):
+        try:
+            self.lock_for_update()
+        except LockError:
             raise UserError(_('The payment of this line is already being created, please try again in a moment.'))
         for line in self:
             if line.state != 'draft':

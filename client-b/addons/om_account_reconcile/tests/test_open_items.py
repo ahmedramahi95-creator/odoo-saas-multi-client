@@ -18,17 +18,15 @@ class TestOpenItems(AccountTestInvoicingCommon):
         super().setUpClass()
         cls.line_model = cls.env['account.move.line']
         cls.receivable = cls.company_data['default_account_receivable']
-        # a payment of 19.0 makes an entry once its method has an outstanding account: the cash is not
-        # reconciled with statements, so the outstanding account of the cash payments is the cash account
-        cash = cls.company_data['default_journal_cash']
-        cash.inbound_payment_method_line_ids.payment_account_id = cash.default_account_id
 
     def _invoice(self, amount, post=True):
         return self.init_invoice('out_invoice', amounts=[amount], invoice_date='2026-06-01',
                                  taxes=[], post=post, partner=self.partner_a)
 
     def _cash_payment(self, amount):
-        payment = self.env['account.payment'].create({
+        # a journal entry on the outstanding account, also when the accounting app makes the payments without
+        # entries of their own until the bank statement
+        payment = self.env['account.payment'].with_context(force_payment_move=True).create({
             'payment_type': 'inbound',
             'partner_type': 'customer',
             'partner_id': self.partner_a.id,
@@ -38,6 +36,11 @@ class TestOpenItems(AccountTestInvoicingCommon):
         })
         payment.action_post()
         return payment
+
+    def _paid_state(self):
+        # paid through the outstanding account: In Payment until the bank statement when the accounting app is
+        # installed, Paid without it
+        return self.env['account.move']._get_invoice_in_payment_state()
 
     def _groups(self, **kwargs):
         return self.line_model.om_open_items_search_groups(**kwargs)['groups']
@@ -70,7 +73,7 @@ class TestOpenItems(AccountTestInvoicingCommon):
         group = self._partner_group()
         data = self.line_model.om_open_items_get_lines(group['partner_id'], group['account_id'])
         self.line_model.om_open_items_reconcile([line['id'] for line in data['lines']])
-        self.assertEqual(invoice.payment_state, 'paid')
+        self.assertEqual(invoice.payment_state, self._paid_state())
         self.assertTrue(all(payment.move_id.line_ids.filtered(
             lambda line: line.account_id == self.receivable).mapped('reconciled')))
         self.assertFalse([group for group in self._groups(account_type='receivable')
@@ -102,7 +105,7 @@ class TestOpenItems(AccountTestInvoicingCommon):
         group = self._partner_group()
         data = self.line_model.om_open_items_get_lines(group['partner_id'], group['account_id'])
         self.line_model.om_open_items_reconcile([line['id'] for line in data['lines']])
-        self.assertEqual(invoice.payment_state, 'paid')
+        self.assertEqual(invoice.payment_state, self._paid_state())
         group = self._partner_group()
         self.assertAlmostEqual(group['residual'], -300.0, msg='the customer has 300 to its credit')
 
@@ -123,7 +126,7 @@ class TestOpenItems(AccountTestInvoicingCommon):
                 'label': 'Early payment discount',
             },
         )
-        self.assertEqual(invoice.payment_state, 'paid', 'nothing is left on the invoice')
+        self.assertEqual(invoice.payment_state, self._paid_state(), 'nothing is left on the invoice')
         self.assertFalse([group for group in self._groups(account_type='receivable')
                           if group['partner_id'] == self.partner_a.id],
                          'the customer has nothing open any more')

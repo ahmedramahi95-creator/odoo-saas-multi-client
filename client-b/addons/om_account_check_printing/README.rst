@@ -1,8 +1,8 @@
 =======================
-Odoo 18 Cheque Printing
+Odoo 20 Cheque Printing
 =======================
 
-This module adds configurable cheque formats to Odoo 18 Community Edition, so that vendor payments can
+This module adds configurable cheque formats to Odoo 20 Community Edition, so that vendor payments can
 be printed on the cheques of any bank. Every field is placed in millimetres on the page.
 
 Features

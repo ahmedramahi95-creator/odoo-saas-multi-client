@@ -2,6 +2,7 @@ import time
 
 from odoo import api, models, _
 from odoo.exceptions import UserError
+from odoo.fields import Domain
 
 
 class ReportBankReconciliation(models.AbstractModel):
@@ -23,12 +24,12 @@ class ReportBankReconciliation(models.AbstractModel):
         states = ('posted',) if form['target_move'] == 'posted' else ('draft', 'posted')
         company_id = form['company_id'][0] if isinstance(form['company_id'], (list, tuple)) \
             else form['company_id']
-        domain = [('account_id', 'in', accounts.ids),
-                  ('company_id', 'child_of', company_id),
-                  ('parent_state', 'in', states),
-                  ('date', '<=', form['date'])]
+        domain = (Domain('account_id', 'in', accounts.ids)
+                  & Domain('company_id', 'child_of', company_id)
+                  & Domain('parent_state', 'in', states)
+                  & Domain('date', '<=', form['date']))
         if journal is not None:
-            domain.append(('journal_id', '=', journal.id))
+            domain &= Domain('journal_id', '=', journal.id)
         return domain
 
     @api.model
@@ -50,7 +51,7 @@ class ReportBankReconciliation(models.AbstractModel):
         if not accounts:
             return 0.0, self.env['account.move.line']
         lines = self.env['account.move.line'].search(
-            self._line_domain(accounts, form, journal=journal) + [('reconciled', '=', False)],
+            self._line_domain(accounts, form, journal=journal) & Domain('reconciled', '=', False),
             order='date, id')
         lines = lines.filtered(lambda line: not line.company_currency_id.is_zero(line.amount_residual))
         return sum(lines.mapped('amount_residual')), lines

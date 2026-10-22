@@ -1,7 +1,7 @@
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, proxy, useProps } from "@odoo/owl";
 import { CheckBox } from "@web/core/checkbox/checkbox";
 import { _t } from "@web/core/l10n/translation";
-import { x2ManyCommands } from "@web/core/orm_service";
+import { x2ManyCommands } from "@web/core/orm_plugin";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { useRecordObserver } from "@web/model/relational_model/utils";
@@ -9,14 +9,6 @@ import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { MenuPanel } from "./menu_panel";
 
 const MODEL = "om.access.profile";
-
-/** Odoo 18 keeps applyCommands private: do what its linkTo() does, with a list of commands. */
-function applyCommands(list, commands) {
-    return list.model.mutex.exec(async () => {
-        await list._applyCommands(commands);
-        await list._onUpdate();
-    });
-}
 
 /**
  * The Menus & Apps tab: the real menu tree of the database, where a profile is
@@ -33,13 +25,13 @@ function applyCommands(list, commands) {
 export class MenuTreeField extends Component {
     static template = "om_access_manager.MenuTreeField";
     static components = { CheckBox, MenuPanel };
-    static props = { ...standardFieldProps };
+    props = useProps({ ...standardFieldProps });
 
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");
-        this.state = useState({
+        this.state = proxy({
             expanded: {},
             search: "",
             onlyRestricted: false,
@@ -138,14 +130,14 @@ export class MenuTreeField extends Component {
         const rule = this.state.tree.menu_rules[menuId];
         if (rule) {
             const rights = ["perm_read", "perm_create", "perm_write", "perm_unlink"].filter((name) => !rule[name]);
-            marks.push({ icon: "sitemap", title: rights.length || rule.records !== "all"
+            marks.push({ icon: "account_tree", title: rights.length || rule.records !== "all"
                 ? _t("Restricts everything below") : _t("Set for everything below") });
         }
         if (this.state.tree.granted_apps?.includes(menuId)) {
             marks.push({ icon: "key", title: _t("Opens the app to its users") });
         }
         if (this.state.tree.apps?.[menuId]) {
-            marks.push({ icon: "list-ul", title: _t("Only some records allowed in this app") });
+            marks.push({ icon: "checklist", title: _t("Only some records allowed in this app") });
         }
         const data = menu.model && this.state.tree.models[menu.model];
         if (data) {
@@ -154,19 +146,19 @@ export class MenuTreeField extends Component {
                     ? _t("Some rights removed") : _t("No access to the data") });
             }
             if (data.records !== "all") {
-                marks.push({ icon: "filter", title: _t("Only some records") });
+                marks.push({ icon: "filter_alt", title: _t("Only some records") });
             }
             if (data.fields || data.elements) {
-                marks.push({ icon: "eye-slash", title: _t("Fields, tabs or filters hidden") });
+                marks.push({ icon: "visibility_off", title: _t("Fields, tabs or filters hidden") });
             }
             if (data.buttons) {
-                marks.push({ icon: "hand-pointer-o", title: _t("Buttons hidden or blocked") });
+                marks.push({ icon: "smart_button", title: _t("Buttons hidden or blocked") });
             }
             if (data.print) {
-                marks.push({ icon: "print", title: _t("Reports or actions hidden") });
+                marks.push({ icon: "print_disabled", title: _t("Reports or actions hidden") });
             }
             if (data.switches) {
-                marks.push({ icon: "toggle-off", title: _t("Switches on") });
+                marks.push({ icon: "toggle_off", title: _t("Switches on") });
             }
         }
         return marks;
@@ -256,7 +248,7 @@ export class MenuTreeField extends Component {
                         name: entry.label,
                         depth: depth + 1,
                         hidden: hiddenPrints.has(key),
-                        icon: entry.kind === "report" ? "print" : "cog",
+                        icon: entry.kind === "report" ? "print" : "settings",
                     });
                 }
                 for (const childId of this.children[menuId] || []) {
@@ -288,14 +280,14 @@ export class MenuTreeField extends Component {
         if (info && granted) {
             if (shown && this.notGiven(menuId)) {
                 // ticking an app its users cannot open gives it to them
-                await applyCommands(granted, [
+                await granted.applyCommands([
                     [x2ManyCommands.LINK, info.grant.id, { id: info.grant.id, display_name: info.grant.name }],
                 ]);
             } else if (!shown) {
                 // unticking an app the profile gives takes it back
                 const given = info.group_ids.filter((id) => this.grantedIds.has(id));
                 if (given.length) {
-                    await applyCommands(granted, given.map((id) => [x2ManyCommands.UNLINK, id]));
+                    await granted.applyCommands(given.map((id) => [x2ManyCommands.UNLINK, id]));
                 }
             }
         }
@@ -316,7 +308,7 @@ export class MenuTreeField extends Component {
             }
         }
         if (commands.length) {
-            return applyCommands(this.record.data[this.props.name], commands);
+            return this.record.data[this.props.name].applyCommands(commands);
         }
     }
 

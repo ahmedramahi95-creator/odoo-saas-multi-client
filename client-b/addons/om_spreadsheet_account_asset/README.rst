@@ -1,9 +1,9 @@
 ========================
-Odoo 18 Assets Dashboard
+Odoo 20 Assets Dashboard
 ========================
 
-This module adds the Assets dashboard to the Finance section of the Dashboards app of Odoo 18
-Community Edition, next to the accounting dashboards of Odoo 18 Accounting Dashboards. It is installed
+This module adds the Assets dashboard to the Finance section of the Dashboards app of Odoo 20
+Community Edition, next to the accounting dashboards of Odoo 20 Accounting Dashboards. It is installed
 automatically when om_account_asset and om_spreadsheet_account are installed.
 
 Features

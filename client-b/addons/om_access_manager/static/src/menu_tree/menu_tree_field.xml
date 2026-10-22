@@ -16,10 +16,10 @@
                 <t t-foreach="this.rows" t-as="row" t-key="row.id">
                 <div t-if="row.kind === 'print'" class="d-flex align-items-center o_om_menu_tree_row o_om_tree_print"
                      t-att-style="'padding-left: ' + (row.depth * 1.5) + 'rem'" t-att-data-print="row.key">
-                    <span class="fa fa-fw me-1"/>
+                    <span class="oi oi-fw me-1"/>
                     <CheckBox value="!row.hidden" disabled="this.props.readonly or this.state.busy"
                               onChange="(shown) => this.togglePrint(row.entry, shown)"/>
-                    <i t-attf-class="fa fa-{{row.icon}} me-1 text-muted"/>
+                    <i class="oi me-1 text-muted" t-att-data-icon="row.icon"/>
                     <span class="small" t-att-class="{'text-muted text-decoration-line-through': row.hidden}"
                           t-out="row.name"/>
                     <span t-if="row.entry.kind === 'action'" class="text-muted small ms-2">Action menu</span>
@@ -31,10 +31,10 @@
                     <button t-if="row.hasChildren and !this.state.search and !this.state.onlyRestricted" type="button"
                             class="btn btn-link p-0 me-1 o_om_menu_tree_caret"
                             t-on-click="() => this.toggleExpand(row.id)">
-                        <i t-attf-class="fa fa-fw {{row.expanded ? 'fa-caret-down' : 'fa-caret-right'}}"/>
+                        <i class="oi oi-fw" t-att-data-icon="row.expanded ? 'arrow_drop_down' : 'arrow_right'"/>
                     </button>
-                    <span t-else="" class="fa fa-fw me-1"/>
-                    <CheckBox value="!row.hidden and !row.notGiven" className="row.partial and !row.notGiven ? 'o_om_partial' : ''"
+                    <span t-else="" class="oi oi-fw me-1"/>
+                    <CheckBox value="!row.hidden and !row.notGiven" indeterminate="row.partial and !row.notGiven"
                               disabled="this.props.readonly or row.parentHidden"
                               onChange="(shown) => this.toggle(row.id, shown)"/>
                     <button type="button" class="btn btn-link p-0 text-start text-reset o_om_menu_tree_name"
@@ -49,8 +49,8 @@
                     <span t-if="row.model" class="text-muted small ms-2 o_om_menu_tree_model" t-out="row.model"/>
                     <span t-if="row.shared" class="badge text-bg-light border ms-1"
                           title="Other apps open this data too">shared</span>
-                    <i t-foreach="row.marks" t-as="mark" t-key="mark_index" t-attf-class="fa fa-{{mark.icon}} ms-1 text-warning o_om_mark"
-                       t-att-title="mark.title"/>
+                    <i t-foreach="row.marks" t-as="mark" t-key="mark_index" class="oi ms-1 text-warning o_om_mark"
+                       t-att-data-icon="mark.icon" t-att-title="mark.title"/>
                     <span t-if="row.depth === 0 and !row.hidden and row.hiddenCount"
                           class="badge rounded-pill text-bg-warning ms-2" t-out="this.hiddenLabel(row.hiddenCount)"/>
                 </div>
