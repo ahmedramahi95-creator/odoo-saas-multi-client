@@ -1,1 +1,1 @@
-# Custom Addons for Client B
+Odoo Apps
