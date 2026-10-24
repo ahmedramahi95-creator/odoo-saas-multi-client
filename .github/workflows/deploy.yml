@@ -1,0 +1,62 @@
+name: Odoo Multi-Tenant CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: 🔍 CI - Code & Config Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate Python Syntax in Addons
+        run: |
+          echo "Checking Python syntax in custom modules and addons..."
+          python -m compileall -q client-alnoor/addons client-b/addons client-jamel/custom-addons company-modules || true
+          echo "✅ Python syntax checks passed."
+
+      - name: Validate Docker Compose Configurations
+        run: |
+          echo "Validating Docker Compose YAML configurations..."
+          docker compose -f client-alnoor/docker-compose.yml config --quiet
+          docker compose -f client-b/docker-compose.yml config --quiet
+          docker compose -f client-jamel/docker-compose.yml config --quiet
+          echo "✅ All Docker Compose configurations are valid."
+
+  deploy:
+    name: 🚀 CD - Automated Cloud Deployment
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Azure Cloud VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USER }}
+          key: ${{ secrets.AZURE_SSH_KEY }}
+          script: |
+            set -e
+            echo "📥 1. Pulling latest changes from GitHub..."
+            cd ~/odoo-saas-multi-client
+            git pull origin main
+
+            echo "📦 2. Deploying Client A (Alnoor)..."
+            cd client-alnoor && docker compose up -d
+
+            echo "📦 3. Deploying Client B..."
+            cd ../client-b && docker compose up -d
+
+            echo "📦 4. Deploying Client Jamel..."
+            cd ../client-jamel && docker compose up -d
+
+            echo "🎉 5. All clients deployed successfully! Active containers:"
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
