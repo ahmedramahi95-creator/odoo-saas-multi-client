@@ -1,17 +1,14 @@
 {
   "mcpServers": {
-    "context7": {
-      "type": "http",
-      "url": "https://mcp.context7.com/mcp",
-      "serverUrl": "https://mcp.context7.com/mcp"
+    "azure": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@azure/mcp@latest",
+        "server",
+        "start"
+      ]
     },
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "serverUrl": "https://api.githubcopilot.com/mcp/"
-    }
-  },
-  "servers": {
     "context7": {
       "type": "http",
       "url": "https://mcp.context7.com/mcp",
