@@ -48,6 +48,12 @@
         <field name="sequence">2</field><field name="view_mode">form</field>
         <field name="view_id" ref="invoice_form"/><field name="act_window_id" ref="action_invoices"/>
     </record>
-    <menuitem id="menu_jamel" name="Jamel" groups="group_invoice_reader" sequence="10"/>
+    <record id="action_contacts" model="ir.actions.act_window">
+        <field name="name">Customers and Suppliers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_jamel" name="Jamel" groups="group_prof,group_fan,group_log,group_super" sequence="10"/>
+    <menuitem id="menu_contacts" name="Customers and Suppliers" parent="menu_jamel" action="action_contacts" groups="group_prof,group_fan,group_super"/>
     <menuitem id="menu_invoices" name="Print Invoices" parent="menu_jamel" action="action_invoices" groups="group_invoice_reader"/>
 </odoo>
