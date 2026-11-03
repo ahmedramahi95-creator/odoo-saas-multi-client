@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_invoice_pdf" model="ir.actions.report">
+        <field name="name">Print Invoice</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">account.report_invoice</field>
+        <field name="group_ids" eval="[Command.link(ref('group_invoice_reader'))]"/>
+    </record>
+    <record id="invoice_list" model="ir.ui.view">
+        <field name="name">jamel.invoice.readonly.list</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="name"/><field name="partner_id"/><field name="move_type"/>
+                <field name="invoice_date"/><field name="amount_total"/><field name="state"/>
+            </list>
+        </field>
+    </record>
+    <record id="invoice_form" model="ir.ui.view">
+        <field name="name">jamel.invoice.readonly.form</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header><button name="%(action_invoice_pdf)d" type="action" string="Print Invoice" class="btn-primary"/></header>
+                <sheet>
+                    <group><field name="name"/><field name="partner_id"/><field name="invoice_date"/><field name="state"/></group>
+                    <field name="invoice_line_ids" readonly="1">
+                        <list create="0" edit="0" delete="0">
+                            <field name="name"/><field name="quantity"/><field name="price_unit"/>
+                            <field name="price_subtotal"/><field name="price_total"/>
+                        </list>
+                    </field>
+                    <group><field name="amount_untaxed"/><field name="amount_tax"/><field name="amount_total"/></group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_invoices" model="ir.actions.act_window">
+        <field name="name">Invoices — Read and Print</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="invoice_list"/>
+        <field name="domain">[('move_type', 'in', ['out_invoice', 'out_refund', 'in_invoice', 'in_refund'])]</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+    <record id="invoice_form_action_view" model="ir.actions.act_window.view">
+        <field name="sequence">2</field><field name="view_mode">form</field>
+        <field name="view_id" ref="invoice_form"/><field name="act_window_id" ref="action_invoices"/>
+    </record>
+    <menuitem id="menu_jamel" name="Jamel" groups="group_invoice_reader" sequence="10"/>
+    <menuitem id="menu_invoices" name="Print Invoices" parent="menu_jamel" action="action_invoices" groups="group_invoice_reader"/>
+</odoo>
