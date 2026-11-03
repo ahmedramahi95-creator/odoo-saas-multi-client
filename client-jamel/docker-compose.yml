@@ -18,6 +18,8 @@ services:
   web:
     image: odoo:20.0
     container_name: client_jamel_odoo
+    entrypoint: ["/bin/bash", "/opt/jamel/start-community.sh"]
+    command: ["odoo"]
     depends_on:
       db:
         condition: service_healthy
@@ -28,10 +30,12 @@ services:
       PORT: 5432
       USER: ${POSTGRES_USER}
       PASSWORD: ${POSTGRES_PASSWORD}
+      ODOO_DATABASE: ${ODOO_DATABASE:-ahmed_db}
     volumes:
       - client_jamel_odoo_data:/var/lib/odoo
       - ./config/odoo.conf:/etc/odoo/odoo.conf:ro
       - ./custom-addons:/mnt/extra-addons
+      - ./start-community.sh:/opt/jamel/start-community.sh:ro
     restart: unless-stopped
 
 volumes:
